@@ -8,7 +8,7 @@ Com o `esptool.py` instalado, um exemplo de mesclagem para ESP32 é:
 
 ```bash
 esptool.py --chip esp32 merge_bin \
-  -o solarbeam-firmware-merged.bin \
+  -o solarbeamfirmware.bin \
   --flash_mode dio --flash_freq 40m --flash_size 4MB \
   0x1000 build/solarbeam.ino.bootloader.bin \
   0x8000 build/solarbeam.ino.partitions.bin \
@@ -16,7 +16,7 @@ esptool.py --chip esp32 merge_bin \
   0x10000 build/solarbeam.ino.bin
 ```
 
-Selecione `solarbeam-firmware-merged.bin` em `Dispositivos`, conecte o ESP32
+Selecione `solarbeamfirmware.bin` em `Dispositivos`, conecte o ESP32
 por USB e clique em `Gravar Firmware`. Depois da gravação, o navegador envia o
 código do dispositivo e aguarda a primeira leitura chegar à API.
 

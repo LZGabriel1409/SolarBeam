@@ -51,7 +51,7 @@ jobs:
         run: |
           python -m pip install esptool
           esptool --chip esp32 merge-bin \
-            -o build/solarbeam-firmware-merged.bin \
+            -o build/solarbeamfirmware.bin \
             --flash-mode dio \
             --flash-freq 40m \
             --flash-size 4MB \
@@ -61,20 +61,20 @@ jobs:
             0x10000 build/artifacts/solarbeam_firmware.ino.bin
 
       - name: Generate checksum
-        run: sha256sum build/solarbeam-firmware-merged.bin > build/solarbeam-firmware-merged.bin.sha256
+        run: sha256sum build/solarbeamfirmware.bin > build/solarbeamfirmware.bin.sha256
 
       - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
         with:
           name: solarbeam-firmware-${{ github.sha }}
           path: |
-            build/solarbeam-firmware-merged.bin
-            build/solarbeam-firmware-merged.bin.sha256
+            build/solarbeamfirmware.bin
+            build/solarbeamfirmware.bin.sha256
 
       - name: Publish tagged firmware release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            build/solarbeam-firmware-merged.bin
-            build/solarbeam-firmware-merged.bin.sha256
+            build/solarbeamfirmware.bin
+            build/solarbeamfirmware.bin.sha256

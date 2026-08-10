@@ -76,7 +76,7 @@ Todos os ESP32 usam o mesmo firmware. O código individual não fica gravado
 dentro do `.bin`; ele é enviado depois pela USB e salvo na memória do ESP32.
 
 ```text
-Firmware compartilhado: solarbeam-firmware-merged.bin
+Firmware compartilhado: solarbeamfirmware.bin
 
 ESP 1: SB-AAAA1111
 ESP 2: SB-BBBB2222
