@@ -9,12 +9,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const TENSAO_MAXIMA = 4.2; // referencia tipica de bateria Li-ion 18650 cheia
     const TENSAO_MINIMA = 3.0; // referencia tipica de bateria descarregada
 
-    carregar();
-
     if (!dispositivo) {
         window.location.replace("dispositivos.html");
         return;
     }
+
+    carregar();
 
     async function carregar() {
         try {

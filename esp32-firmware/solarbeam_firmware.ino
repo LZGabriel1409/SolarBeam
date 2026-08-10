@@ -26,6 +26,8 @@ String wifiSenhaSalva = "";
 
 unsigned long ultimoEnvio = 0;
 const unsigned long INTERVALO_ENVIO_MS = 60000;
+unsigned long ultimaVerificacaoComando = 0;
+const unsigned long INTERVALO_VERIFICACAO_COMANDO_MS = 5000;
 bool primeiraLeituraPendente = true;
 
 unsigned long inicioTentativaWifi = 0;
@@ -91,7 +93,10 @@ void loop() {
         primeiraLeituraPendente = false;
       }
     }
-    verificarComandoPendente();
+    if (millis() - ultimaVerificacaoComando > INTERVALO_VERIFICACAO_COMANDO_MS) {
+      verificarComandoPendente();
+      ultimaVerificacaoComando = millis();
+    }
   }
 }
 void iniciarPortalConfig() {

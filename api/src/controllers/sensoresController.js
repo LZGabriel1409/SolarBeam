@@ -1,4 +1,16 @@
+const crypto = require('crypto');
 const { db } = require('../database/database');
+
+function tokenValido(esperado, recebido) {
+  if (!esperado || !recebido) return false;
+
+  const bufEsperado = Buffer.from(esperado);
+  const bufRecebido = Buffer.from(recebido);
+
+  if (bufEsperado.length !== bufRecebido.length) return false;
+
+  return crypto.timingSafeEqual(bufEsperado, bufRecebido);
+}
 
 async function receberLeitura(req, res) {
   const { umidade, nivelAgua, bateria, bomba, codigoDispositivo, tokenDispositivo, versaoFirmware } = req.body;
@@ -27,7 +39,7 @@ async function receberLeitura(req, res) {
       return res.status(404).json({ erro: 'Codigo de dispositivo nao reconhecido.' });
     }
 
-    if (dispositivo.rows[0].token_dispositivo && dispositivo.rows[0].token_dispositivo !== tokenDispositivo) {
+    if (dispositivo.rows[0].token_dispositivo && !tokenValido(dispositivo.rows[0].token_dispositivo, tokenDispositivo)) {
       return res.status(401).json({ erro: 'Token do dispositivo invalido.' });
     }
 
