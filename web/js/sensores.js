@@ -18,6 +18,8 @@ document.addEventListener("DOMContentLoaded", () => {
 			$("humidity").textContent = dados.umidade != null ? `${dados.umidade}%` : "--";
 			$("temperature").textContent = dados.temperatura != null ? `${dados.temperatura}°C` : "--";
 			$("water").textContent = dados.nivelAgua != null ? dados.nivelAgua : "--";
+			$("voltage").textContent = dados.bateria != null ? `${dados.bateria}V` : "--";
+			$("autonomy").textContent = dados.autonomiaEstimada || "--";
 			$("updated").textContent = dados.ultimaAtualizacao || "--";
 			$("message").textContent = "Leitura atualizada.";
 			$("message").className = "message success";

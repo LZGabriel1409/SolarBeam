@@ -43,6 +43,12 @@ function solarbeamAuthHeaders() {
     };
 }
 
+function solarbeamEscapeHTML(valor) {
+    const div = document.createElement("div");
+    div.textContent = valor == null ? "" : String(valor);
+    return div.innerHTML;
+}
+
 // Chame no topo de paginas exclusivas de admin (ex: usuarios.html)
 function solarbeamExigirAdmin() {
     const role = localStorage.getItem("solarbeam_role");

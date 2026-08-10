@@ -59,6 +59,8 @@ async function initDatabase() {
   await adicionarColunaSeNaoExistir('dispositivos', 'ultima_leitura', 'ultima_leitura TEXT');
   await adicionarColunaSeNaoExistir('dispositivos', 'versao_firmware', 'versao_firmware TEXT');
   await adicionarColunaSeNaoExistir('dispositivos', 'token_dispositivo', 'token_dispositivo TEXT');
+  await adicionarColunaSeNaoExistir('dispositivos', 'localizacao', 'localizacao TEXT');
+  await adicionarColunaSeNaoExistir('dispositivos', 'foto_url', 'foto_url TEXT');
 
   await db.execute(`
     CREATE TABLE IF NOT EXISTS configuracoes (

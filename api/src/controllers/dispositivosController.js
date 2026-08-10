@@ -7,6 +7,15 @@ function gerarCodigo() {
   return 'SB-' + crypto.randomBytes(4).toString('hex').toUpperCase();
 }
 
+function fotoUrlValida(fotoUrl) {
+  if (fotoUrl == null || fotoUrl === '') return true;
+  try {
+    return ['http:', 'https:'].includes(new URL(fotoUrl).protocol);
+  } catch {
+    return false;
+  }
+}
+
 // GET /api/dispositivos - lista os dispositivos do usuario logado
 // Admin pode ver todos passando ?todos=true
 async function listarDispositivos(req, res) {
@@ -15,13 +24,13 @@ async function listarDispositivos(req, res) {
 
     const resultado = verTodos
       ? await db.execute(`
-          SELECT d.id, d.nome, d.codigo, d.criado_em, d.firmware_configurado, d.ultima_leitura, d.versao_firmware, u.email AS dono
+          SELECT d.id, d.nome, d.codigo, d.criado_em, d.firmware_configurado, d.ultima_leitura, d.versao_firmware, d.localizacao, d.foto_url, u.email AS dono
           FROM dispositivos d
           JOIN usuarios u ON u.id = d.usuario_id
           ORDER BY d.id DESC
         `)
       : await db.execute({
-          sql: `SELECT id, nome, codigo, criado_em, firmware_configurado, ultima_leitura, versao_firmware, token_dispositivo FROM dispositivos WHERE usuario_id = ? ORDER BY id DESC`,
+          sql: `SELECT id, nome, codigo, criado_em, firmware_configurado, ultima_leitura, versao_firmware, localizacao, foto_url, token_dispositivo FROM dispositivos WHERE usuario_id = ? ORDER BY id DESC`,
           args: [req.usuario.id],
         });
 
@@ -45,10 +54,13 @@ async function listarDispositivos(req, res) {
 
 // POST /api/dispositivos - cria um novo dispositivo (ESP32) para o usuario logado
 async function criarDispositivo(req, res) {
-  const { nome } = req.body;
+  const { nome, localizacao = null, fotoUrl = null } = req.body;
 
   if (!nome) {
     return res.status(400).json({ erro: 'Nome do dispositivo e obrigatorio.' });
+  }
+  if (!fotoUrlValida(fotoUrl)) {
+    return res.status(400).json({ erro: 'A foto deve usar uma URL http ou https valida.' });
   }
 
   try {
@@ -68,8 +80,8 @@ async function criarDispositivo(req, res) {
     }
 
     await db.execute({
-      sql: `INSERT INTO dispositivos (nome, codigo, usuario_id, token_dispositivo) VALUES (?, ?, ?, ?)`,
-      args: [nome, codigo, req.usuario.id, tokenDispositivo],
+      sql: `INSERT INTO dispositivos (nome, codigo, usuario_id, token_dispositivo, localizacao, foto_url) VALUES (?, ?, ?, ?, ?, ?)`,
+      args: [nome, codigo, req.usuario.id, tokenDispositivo, localizacao, fotoUrl],
     });
 
     res.status(201).json({
@@ -88,10 +100,13 @@ async function criarDispositivo(req, res) {
 // PATCH /api/dispositivos/:id - renomeia um dispositivo (so o dono)
 async function renomearDispositivo(req, res) {
   const { id } = req.params;
-  const { nome } = req.body;
+  const { nome, localizacao, fotoUrl } = req.body;
 
-  if (!nome) {
-    return res.status(400).json({ erro: 'Nome e obrigatorio.' });
+  if (!nome && localizacao === undefined && fotoUrl === undefined) {
+    return res.status(400).json({ erro: 'Informe ao menos um campo para atualizar.' });
+  }
+  if (!fotoUrlValida(fotoUrl)) {
+    return res.status(400).json({ erro: 'A foto deve usar uma URL http ou https valida.' });
   }
 
   try {
@@ -109,10 +124,13 @@ async function renomearDispositivo(req, res) {
       return res.status(403).json({ erro: 'Voce nao tem permissao para editar esse dispositivo.' });
     }
 
-    await db.execute({
-      sql: `UPDATE dispositivos SET nome = ? WHERE id = ?`,
-      args: [nome, id],
-    });
+    const campos = [];
+    const args = [];
+    if (nome !== undefined) { campos.push('nome = ?'); args.push(nome); }
+    if (localizacao !== undefined) { campos.push('localizacao = ?'); args.push(localizacao || null); }
+    if (fotoUrl !== undefined) { campos.push('foto_url = ?'); args.push(fotoUrl || null); }
+    args.push(id);
+    await db.execute({ sql: `UPDATE dispositivos SET ${campos.join(', ')} WHERE id = ?`, args });
 
     res.json({ mensagem: 'Dispositivo renomeado com sucesso.' });
   } catch (err) {

@@ -37,12 +37,14 @@ document.addEventListener("DOMContentLoaded", () => {
         event.preventDefault();
 
         const nome = document.getElementById("nomeDispositivo").value.trim();
+        const localizacao = document.getElementById("localizacaoDispositivo").value.trim();
+        const fotoUrl = document.getElementById("fotoDispositivo").value.trim();
 
         try {
             const resposta = await fetch(`${API_URL}/api/dispositivos`, {
                 method: "POST",
                 headers: solarbeamAuthHeaders(),
-                body: JSON.stringify({ nome }),
+                body: JSON.stringify({ nome, localizacao: localizacao || null, fotoUrl: fotoUrl || null }),
             });
 
             const dados = await resposta.json();
@@ -106,20 +108,22 @@ document.addEventListener("DOMContentLoaded", () => {
             lista.innerHTML = dados.map((d) => `
                 <div class="status-item" style="align-items:flex-start; flex-direction:column; gap:6px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
                     <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                        <b style="color: var(--text-primary);" id="nomeDisp-${d.id}">${d.nome}</b>
+                        <b style="color: var(--text-primary);" id="nomeDisp-${d.id}">${solarbeamEscapeHTML(d.nome)}</b>
                         <div style="display:flex; gap:8px;">
-                            <a href="dispositivo-detalhe.html?id=${d.id}&codigo=${d.codigo}&nome=${encodeURIComponent(d.nome)}" style="background:none; border:1px solid rgba(34,197,94,0.3); color: var(--solar-green); border-radius:6px; padding:4px 10px; font-size:12px; text-decoration:none;">
+                            <a href="dispositivo-detalhe.html?id=${encodeURIComponent(d.id)}&codigo=${encodeURIComponent(d.codigo)}&nome=${encodeURIComponent(d.nome)}" style="background:none; border:1px solid rgba(34,197,94,0.3); color: var(--solar-green); border-radius:6px; padding:4px 10px; font-size:12px; text-decoration:none;">
                                 Ver Dashboard
                             </a>
                             <button data-id="${d.id}" class="btnRenomear" style="background:none; border:1px solid rgba(255,255,255,0.1); color: var(--text-secondary); border-radius:6px; padding:4px 10px; font-size:12px; cursor:pointer;">
                                 Renomear
                             </button>
-                            <button data-id="${d.id}" data-nome="${d.nome}" class="btnApagarDispositivo" style="background:none; border:1px solid rgba(248,113,113,0.35); color: #F87171; border-radius:6px; padding:4px 10px; font-size:12px; cursor:pointer;">
+                            <button data-id="${d.id}" class="btnApagarDispositivo" style="background:none; border:1px solid rgba(248,113,113,0.35); color: #F87171; border-radius:6px; padding:4px 10px; font-size:12px; cursor:pointer;">
                                 Apagar
                             </button>
                         </div>
                     </div>
-                            <span style="font-size: 12px; color: var(--text-secondary);">Código: <code>${d.codigo}</code> · ${d.online ? "Online" : "Offline"} · ${Number(d.firmware_configurado) === 1 ? "Firmware " + (d.versao_firmware || "configurado") : "Firmware pendente"}</span>
+                            <span style="font-size: 12px; color: var(--text-secondary);">Código: <code>${solarbeamEscapeHTML(d.codigo)}</code> · ${d.online ? "Online" : "Offline"} · ${Number(d.firmware_configurado) === 1 ? "Firmware " + solarbeamEscapeHTML(d.versao_firmware || "configurado") : "Firmware pendente"}</span>
+                            <span style="font-size: 12px; color: var(--text-secondary);">Horta: ${solarbeamEscapeHTML(d.localizacao || "Não informada")}</span>
+                            ${d.foto_url ? `<img src="${solarbeamEscapeHTML(d.foto_url)}" alt="Foto de ${solarbeamEscapeHTML(d.nome)}" style="width:56px;height:56px;object-fit:cover;border-radius:8px;margin-top:4px;">` : ""}
                 </div>
             `).join("");
 
@@ -128,7 +132,10 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             document.querySelectorAll(".btnApagarDispositivo").forEach((btn) => {
-                btn.addEventListener("click", () => apagarDispositivo(btn.dataset.id, btn.dataset.nome));
+                btn.addEventListener("click", () => {
+                    const dispositivo = dispositivosAtuais.find((item) => String(item.id) === btn.dataset.id);
+                    apagarDispositivo(btn.dataset.id, dispositivo?.nome || "este dispositivo");
+                });
             });
 
         } catch (err) {
@@ -210,7 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         seletor.innerHTML = dispositivos.map((d) =>
-            `<option value="${d.id}">${d.nome} (${d.codigo})</option>`
+            `<option value="${d.id}">${solarbeamEscapeHTML(d.nome)} (${solarbeamEscapeHTML(d.codigo)})</option>`
         ).join("");
     }
 

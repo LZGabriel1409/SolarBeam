@@ -31,8 +31,8 @@ async function criarUsuarioInicial(req, res) {
     return res.status(400).json({ erro: 'nome, usuario e senha sao obrigatorios.' });
   }
 
-  if (senha.length < 4) {
-    return res.status(400).json({ erro: 'Senha muito curta.' });
+  if (senha.length < 8) {
+    return res.status(400).json({ erro: 'A senha deve ter pelo menos 8 caracteres.' });
   }
 
   const papel = role === 'admin' ? 'admin' : 'user';

@@ -16,6 +16,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const soilHumidity = document.getElementById("soilHumidity");
     const temperature = document.getElementById("temperature");
     const battery = document.getElementById("battery");
+    const waterLevel = document.getElementById("waterLevel");
+    const batteryAutonomy = document.getElementById("batteryAutonomy");
     const pumpStatus = document.getElementById("pumpStatus");
     const lastUpdate = document.getElementById("lastUpdate");
 
@@ -333,6 +335,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 dados.bateria != null ? `${dados.bateria}V` : "--";
         }
 
+        if (waterLevel) waterLevel.textContent = dados.nivelAgua != null ? `${dados.nivelAgua}%` : "--";
+        if (batteryAutonomy) batteryAutonomy.textContent = dados.autonomiaEstimada || "--";
+
         if (pumpStatus) {
             pumpStatus.textContent =
                 dados.bomba ? "Ligada" : "Desligada";
@@ -372,6 +377,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (soilHumidity) soilHumidity.textContent = "--";
         if (temperature) temperature.textContent = "--";
         if (battery) battery.textContent = "--";
+        if (waterLevel) waterLevel.textContent = "--";
+        if (batteryAutonomy) batteryAutonomy.textContent = "--";
         if (pumpStatus) pumpStatus.textContent = "--";
         if (lastUpdate) lastUpdate.textContent = "--";
 

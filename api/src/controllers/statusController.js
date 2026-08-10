@@ -50,11 +50,14 @@ async function obterStatus(req, res) {
     }
 
     const leitura = resultado.rows[0];
+    const bateriaPercentual = Math.max(0, Math.min(100, Math.round(((leitura.bateria - 3) / 1.2) * 100)));
 
     res.json({
       umidade: leitura.umidade,
       nivelAgua: leitura.nivel_agua,
       bateria: leitura.bateria,
+      bateriaPercentual,
+      autonomiaEstimada: bateriaPercentual > 0 ? `${Math.max(1, Math.round(bateriaPercentual / 8))}h` : '--',
       bomba: Boolean(leitura.bomba),
       versaoFirmware: leitura.versao_firmware,
       online: Date.now() - new Date(`${leitura.data_hora}Z`).getTime() <= 120000,

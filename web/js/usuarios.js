@@ -16,6 +16,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const senha = document.getElementById("novaSenha").value.trim();
         const role = document.getElementById("novoRole").value;
 
+        if (senha.length < 8) {
+            mostrarMensagem("A senha deve ter pelo menos 8 caracteres.", "error");
+            return;
+        }
+
         try {
             const resposta = await fetch(`${API_URL}/api/usuarios`, {
                 method: "POST",
@@ -64,12 +69,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 const souEu = meuId != null && Number(meuId) === Number(u.id);
                 return `
                 <div class="status-item">
-                    <span>${u.nome} (${u.email})</span>
+                    <span>${solarbeamEscapeHTML(u.nome)} (${solarbeamEscapeHTML(u.email)})</span>
                     <div style="display:flex; align-items:center; gap:10px;">
                         <b class="${u.role === 'admin' ? 'online' : ''}">${u.role === 'admin' ? 'Admin' : 'Usuário'}</b>
                         <button
                             data-id="${u.id}"
-                            data-nome="${u.nome}"
                             class="btnApagarUsuario"
                             ${souEu ? "disabled title=\"Você não pode apagar o próprio usuário\"" : ""}
                             style="background:none; border:1px solid rgba(248,113,113,0.35); color:#F87171; border-radius:6px; padding:4px 10px; font-size:12px; cursor:${souEu ? "not-allowed" : "pointer"}; opacity:${souEu ? "0.4" : "1"};">
@@ -82,7 +86,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
             document.querySelectorAll(".btnApagarUsuario").forEach((btn) => {
                 if (btn.disabled) return;
-                btn.addEventListener("click", () => apagarUsuario(btn.dataset.id, btn.dataset.nome));
+                btn.addEventListener("click", () => {
+                    const usuario = dados.find((item) => String(item.id) === btn.dataset.id);
+                    apagarUsuario(btn.dataset.id, usuario?.nome || "este usuário");
+                });
             });
 
         } catch (err) {

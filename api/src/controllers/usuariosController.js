@@ -22,6 +22,10 @@ async function criarUsuario(req, res) {
     return res.status(400).json({ erro: 'nome, usuario e senha sao obrigatorios.' });
   }
 
+  if (senha.length < 8) {
+    return res.status(400).json({ erro: 'A senha deve ter pelo menos 8 caracteres.' });
+  }
+
   const papel = role === 'admin' ? 'admin' : 'user';
 
   try {
