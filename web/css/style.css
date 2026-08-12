@@ -1,171 +1,415 @@
+/* ==========================================================
+   1. RESET GLOBAL
+========================================================== */
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+
+/* ==========================================================
+   2. VARIÁVEIS GLOBAIS
+========================================================== */
+
 :root {
+    /* Cores principais */
     --solar-yellow: #FBBF24;
+    --solar-yellow-dark: #F59E0B;
+
     --solar-green: #22C55E;
     --solar-blue: #3B82F6;
+    --solar-red: #EF4444;
+
+    /* Fundos */
     --background: #0F172A;
+    --background-dark: #020617;
     --card: #1E293B;
+
+    /* Textos */
     --text-primary: #F8FAFC;
     --text-secondary: #CBD5E1;
+    --text-muted: #94A3B8;
 
+    /* Bordas */
+    --border: rgba(255, 255, 255, 0.08);
+
+    /* Compatibilidade com outros CSS */
+    --primary: var(--solar-yellow);
+    --primary-dark: var(--solar-yellow-dark);
+
+    --green: var(--solar-green);
+    --blue: var(--solar-blue);
+    --red: var(--solar-red);
+
+    --text: var(--text-primary);
 }
+
+
+/* ==========================================================
+   3. HTML
+========================================================== */
+
+html {
+    min-height: 100%;
+}
+
+
+/* ==========================================================
+   4. BODY
+========================================================== */
 
 body {
-    font-family: "Poppins";
     min-height: 100vh;
+
     overflow-x: hidden;
+
+    font-family:
+        "Poppins",
+        sans-serif;
+
     color: var(--text-primary);
-    background: linear-gradient(135deg,#020617,#0F172A,#111827);
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--background-dark),
+            var(--background),
+            #111827
+        );
 }
+
+
+/* ==========================================================
+   5. EFEITOS DE ILUMINAÇÃO DO FUNDO
+========================================================== */
 
 body::before,
 body::after {
     content: "";
+
     position: fixed;
+
     width: 450px;
     height: 450px;
+
     border-radius: 50%;
+
     filter: blur(120px);
+
     opacity: 0.35;
+
     z-index: -1;
+
+    pointer-events: none;
 }
+
+
+/* ==========================================================
+   6. LUZ AMARELA
+========================================================== */
 
 body::before {
-    background: var(--solar-yellow);
     top: -150px;
     left: -150px;
-    animation: lightMoveOne 10s infinite alternate;
+
+    background: var(--solar-yellow);
+
+    animation:
+        lightMoveOne 10s infinite alternate;
 }
+
+
+/* ==========================================================
+   7. LUZ AZUL
+========================================================== */
 
 body::after {
-    background: var(--solar-blue);
-    bottom: -150px;
     right: -150px;
-    animation: lightMoveTwo 12s infinite alternate;
+    bottom: -150px;
+
+    background: var(--solar-blue);
+
+    animation:
+        lightMoveTwo 12s infinite alternate;
 }
+
+
+/* ==========================================================
+   8. ANIMAÇÃO — LUZ AMARELA
+========================================================== */
 
 @keyframes lightMoveOne {
+
     from {
-        transform: translate(0,0);
+        transform: translate(0, 0);
     }
+
     to {
-        transform: translate(80px,120px);
+        transform: translate(80px, 120px);
     }
 }
+
+
+/* ==========================================================
+   9. ANIMAÇÃO — LUZ AZUL
+========================================================== */
 
 @keyframes lightMoveTwo {
+
     from {
-        transform: translate(0,0);
+        transform: translate(0, 0);
     }
+
     to {
-        transform: translate(-100px,-80px);
+        transform: translate(-100px, -80px);
     }
 }
 
+
+/* ==========================================================
+   10. PÁGINA DE LOGIN
+   Estrutura visual da página.
+   
+   Os componentes específicos do formulário de login
+   continuam no login.css.
+========================================================== */
+
 .login-page {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     position: relative;
-    overflow: hidden;
+
     z-index: 1;
+
+    min-height: 100vh;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    overflow: hidden;
 }
+
+
+/* ==========================================================
+   11. EFEITOS DE FUNDO DA PÁGINA DE LOGIN
+========================================================== */
 
 .login-page::before,
 .login-page::after {
     content: "";
+
     position: fixed;
+
     border-radius: 50%;
+
     pointer-events: none;
+
     z-index: -1;
+
     filter: blur(90px);
+
     opacity: 0.45;
 }
 
+
+/* ==========================================================
+   12. LUZ AMARELA — LOGIN
+========================================================== */
+
 .login-page::before {
-    width: 280px;
-    height: 280px;
-    background: #FBBF24;
     top: -100px;
     left: -100px;
+
+    width: 280px;
+    height: 280px;
+
+    background: var(--solar-yellow);
 }
+
+
+/* ==========================================================
+   13. LUZ AZUL — LOGIN
+========================================================== */
 
 .login-page::after {
+    right: -120px;
+    bottom: -120px;
+
     width: 320px;
     height: 320px;
-    background: #3B82F6;
-    bottom: -120px;
-    right: -120px;
+
+    background: var(--solar-blue);
 }
 
-.brand-section,
-.login-section {
+
+/* ==========================================================
+   14. SEÇÃO DA MARCA
+========================================================== */
+
+.brand-section {
     width: 50%;
+
     min-height: 650px;
+
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 }
 
+
+/* ==========================================================
+   15. CONTEÚDO DA MARCA
+========================================================== */
+
 .brand-content {
+    width: 100%;
+
     max-width: 500px;
-    animation: fadeLeft 1s ease;
+
+    animation:
+        fadeLeft 1s ease;
 }
+
+
+/* ==========================================================
+   16. ANIMAÇÃO — ENTRADA DA MARCA
+========================================================== */
 
 @keyframes fadeLeft {
+
     from {
         opacity: 0;
-        transform: translateX(-40px);
+
+        transform:
+            translateX(-40px);
     }
+
     to {
         opacity: 1;
-        transform: translateX(0);
+
+        transform:
+            translateX(0);
     }
 }
+
+
+/* ==========================================================
+   17. SEÇÃO DE LOGIN
+========================================================== */
 
 .login-section {
-    animation: fadeRight 1s ease;
+    width: 50%;
+
+    min-height: 650px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    animation:
+        fadeRight 1s ease;
 }
+
+
+/* ==========================================================
+   18. ANIMAÇÃO — ENTRADA DO LOGIN
+========================================================== */
 
 @keyframes fadeRight {
+
     from {
         opacity: 0;
-        transform: translateX(40px);
+
+        transform:
+            translateX(40px);
     }
+
     to {
         opacity: 1;
-        transform: translateX(0);
+
+        transform:
+            translateX(0);
     }
 }
 
-@media(max-width: 1024px) {
+
+/* ==========================================================
+   19. RESPONSIVIDADE — TABLETS
+========================================================== */
+
+@media (max-width: 1024px) {
+
     .login-page {
         flex-direction: column;
     }
+
+
     .brand-section,
     .login-section {
         width: 100%;
+
         min-height: auto;
     }
+
+
     .brand-section {
         padding-bottom: 40px;
     }
 }
 
-@media(max-width: 600px) {
+
+/* ==========================================================
+   20. RESPONSIVIDADE — CELULARES
+========================================================== */
+
+@media (max-width: 600px) {
+
     .login-page {
         padding: 20px;
     }
+
+
+    /*
+       No celular, a apresentação da marca
+       é escondida para priorizar o formulário.
+    */
+
     .brand-section {
         display: none;
     }
+
+
     .login-section {
         min-height: 100vh;
+
+        width: 100%;
+    }
+}
+
+
+/* ==========================================================
+   21. ACESSIBILIDADE
+   Respeita a preferência do sistema por menos animações.
+========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+
+        animation-iteration-count: 1 !important;
+
+        scroll-behavior: auto !important;
+
+        transition-duration: 0.01ms !important;
     }
 }
