@@ -63,14 +63,18 @@ void setup() {
 }
 
 void loop() {
+  // O comando "configurar" (provisionamento pela pagina Dispositivos) precisa
+  // ser lido mesmo com o portal cativo de WiFi ativo, senao ele e perdido
+  // logo apos gravar o firmware (quando ainda nao ha WiFi salvo).
+  if (Serial.available()) {
+    String linha = Serial.readStringUntil('\n');
+    processarComandoSerial(linha);
+  }
+
   if (modoConfigAtivo) {
     dnsServer.processNextRequest();
     servidorConfig.handleClient();
     return;
-  }
-  if (Serial.available()) {
-    String linha = Serial.readStringUntil('\n');
-    processarComandoSerial(linha);
   }
 
   if (WiFi.status() != WL_CONNECTED) {
