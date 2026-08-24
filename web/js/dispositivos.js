@@ -342,42 +342,70 @@ document.addEventListener("DOMContentLoaded", () => {
         provisionarMensagem.textContent = "Iniciando gravação. Não desconecte o ESP32.";
         provisionarMensagem.className = "simulador-mensagem warning";
 
-        try {
-            const { ESPLoader, Transport } = await import("https://unpkg.com/esptool-js@0.4.0/bundle.js");
+        const { ESPLoader, Transport } = await import("https://unpkg.com/esptool-js@0.4.0/bundle.js");
+        const dados = new Uint8Array(await arquivo.arrayBuffer());
+        // esptool-js 0.4.0 espera o "data" do fileArray como binary string
+        // (1 caractere = 1 byte), não como Uint8Array.
+        const dadosBstr = ui8ToBstr(dados);
+
+        // Baud rates tentadas em ordem. 460800 é mais rápida mas alguns
+        // adaptadores USB-serial (ex.: CP210x) e cabos ruins não sustentam
+        // essa taxa de forma estável e derrubam a conexão com "Timeout"
+        // logo no início da escrita. Se isso acontecer, cai para uma taxa
+        // mais lenta e tenta de novo automaticamente.
+        const BAUD_RATES = [460800, 115200];
+
+        for (let tentativa = 0; tentativa < BAUD_RATES.length; tentativa++) {
+            const baudrate = BAUD_RATES[tentativa];
             const transport = new Transport(porta, true);
             const terminal = {
                 clean() {},
                 writeLine(texto) { escreverLog("FLASH: " + texto); },
                 write(texto) { escreverLog("FLASH: " + texto); },
             };
-            const loader = new ESPLoader({ transport, baudrate: 460800, terminal });
-            await loader.main();
-            const dados = new Uint8Array(await arquivo.arrayBuffer());
-            // esptool-js 0.4.0 espera o "data" do fileArray como binary string
-            // (1 caractere = 1 byte), não como Uint8Array.
-            const dadosBstr = ui8ToBstr(dados);
-            await loader.writeFlash({
-                fileArray: [{ data: dadosBstr, address: 0 }],
-                flashSize: "keep",
-                eraseAll: apagarConfiguracoes.checked,
-                compress: true,
-                reportProgress(fileIndex, written, total) {
-                    firmwareProgress.style.width = `${Math.round((written / total) * 100)}%`;
-                },
-            });
-            await loader.hardReset();
-            try { await transport.disconnect(); } catch (error) { /* porta pode ja estar fechada pelo reset */ }
-            firmwareGravado = true;
-            btnEnviarCodigo.disabled = false;
-            provisionarMensagem.textContent = "Firmware gravado. Agora envie o código do dispositivo.";
-            provisionarMensagem.className = "simulador-mensagem success";
-        } catch (error) {
-            provisionarMensagem.textContent = `Falha ao gravar firmware: ${error.message}`;
-            provisionarMensagem.className = "simulador-mensagem error";
-            escreverLog("Falha no flash: " + error.message);
-        } finally {
-            btnGravarFirmware.disabled = false;
+
+            try {
+                if (tentativa > 0) {
+                    escreverLog(`Tentando novamente com baud rate ${baudrate}...`);
+                    provisionarMensagem.textContent = `Timeout na taxa anterior. Tentando novamente a ${baudrate} baud...`;
+                    firmwareProgress.style.width = "0%";
+                }
+
+                const loader = new ESPLoader({ transport, baudrate, terminal });
+                await loader.main();
+                await loader.writeFlash({
+                    fileArray: [{ data: dadosBstr, address: 0 }],
+                    flashSize: "keep",
+                    eraseAll: apagarConfiguracoes.checked,
+                    compress: true,
+                    reportProgress(fileIndex, written, total) {
+                        firmwareProgress.style.width = `${Math.round((written / total) * 100)}%`;
+                    },
+                });
+                await loader.hardReset();
+                try { await transport.disconnect(); } catch (error) { /* porta pode ja estar fechada pelo reset */ }
+
+                firmwareGravado = true;
+                btnEnviarCodigo.disabled = false;
+                provisionarMensagem.textContent = "Firmware gravado. Agora envie o código do dispositivo.";
+                provisionarMensagem.className = "simulador-mensagem success";
+                break;
+            } catch (error) {
+                try { await transport.disconnect(); } catch (e) { /* ignora falha ao desconectar */ }
+
+                const ultimaTentativa = tentativa === BAUD_RATES.length - 1;
+                escreverLog("Falha no flash: " + error.message);
+
+                if (!ultimaTentativa) {
+                    continue;
+                }
+
+                provisionarMensagem.textContent = `Falha ao gravar firmware: ${error.message}`;
+                provisionarMensagem.className = "simulador-mensagem error";
+            }
         }
+
+        btnGravarFirmware.disabled = false;
     }
 
 
