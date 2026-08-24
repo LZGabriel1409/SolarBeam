@@ -211,10 +211,10 @@
 
     <script src="js/config.js"></script>
     <script src="js/auth-guard.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/index.js"></script>
-    <script>
+    <script type="module">
         // Polyfill do Buffer (Node) para o esptool-js funcionar no navegador
-        window.Buffer = window.Buffer || buffer.Buffer;
+        import { Buffer } from "https://esm.sh/buffer@6.0.3";
+        window.Buffer = Buffer;
     </script>
     <script type="module" src="https://unpkg.com/esptool-js@0.4.0/bundle.js"></script>
     <script src="js/dispositivos.js"></script>
