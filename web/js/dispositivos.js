@@ -316,6 +316,19 @@ document.addEventListener("DOMContentLoaded", () => {
         btnGravarFirmware.disabled = !porta || !arquivoFirmware.files[0];
     });
 
+    // Converte um Uint8Array em binary string (1 caractere = 1 byte).
+    // Processa em blocos para não estourar o limite de argumentos do
+    // String.fromCharCode.apply em arquivos de firmware grandes.
+    function ui8ToBstr(u8Array) {
+        let bstr = "";
+        const CHUNK_SIZE = 8192;
+        for (let i = 0; i < u8Array.length; i += CHUNK_SIZE) {
+            const chunk = u8Array.subarray(i, i + CHUNK_SIZE);
+            bstr += String.fromCharCode.apply(null, chunk);
+        }
+        return bstr;
+    }
+
     async function gravarFirmware() {
         const arquivo = arquivoFirmware?.files[0];
         if (!porta || !arquivo) {
@@ -340,8 +353,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const loader = new ESPLoader({ transport, baudrate: 460800, terminal });
             await loader.main();
             const dados = new Uint8Array(await arquivo.arrayBuffer());
+            // esptool-js 0.4.0 espera o "data" do fileArray como binary string
+            // (1 caractere = 1 byte), não como Uint8Array.
+            const dadosBstr = ui8ToBstr(dados);
             await loader.writeFlash({
-                fileArray: [{ data: dados, address: 0 }],
+                fileArray: [{ data: dadosBstr, address: 0 }],
                 flashSize: "keep",
                 eraseAll: apagarConfiguracoes.checked,
                 compress: true,
