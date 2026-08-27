@@ -241,9 +241,9 @@ git tag v1.0.1
 git push origin v1.0.1
 ```
 
-O GitHub Actions publica o `.bin`, o checksum e o pacote
-`solarbeam-firmware-release.zip` na release da tag. O pacote inclui o firmware,
-as instruções e a configuração dos pinos/baud rate usados nesta versão.
+O GitHub Actions publica somente `solarbeamfirmware.bin` e
+`solarbeamfirmware.bin.sha256` na release da tag. O primeiro e o firmware
+mesclado para gravacao; o segundo permite conferir a integridade do download.
 
 ## Evolução planejada
 

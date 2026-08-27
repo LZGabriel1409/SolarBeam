@@ -25,8 +25,9 @@ conectado por USB. O dispositivo deve estar em modo de bootloader quando a
 gravação começar; normalmente isso acontece automaticamente, mas algumas
 placas exigem segurar `BOOT` durante a conexão.
 
-Nas releases do projeto, baixe `solarbeam-firmware-release.zip` para receber o
-firmware mesclado, o checksum e estas instruções em um único pacote.
+Nas releases do projeto, baixe `solarbeamfirmware.bin` e
+`solarbeamfirmware.bin.sha256`. O primeiro e o firmware para gravacao; o segundo
+permite conferir a integridade do download.
 
 ## Configuração do Wi-Fi pelo portal cativo
 
