@@ -1,5 +1,6 @@
 #include <Preferences.h>
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <WebServer.h>
@@ -39,7 +40,7 @@ unsigned long inicioTentativaWifi = 0;
 const unsigned long TEMPO_LIMITE_RECONEXAO_MS = 60000;
 
 void setup() {
-  Serial.begin(40);
+  Serial.begin(115200);
   delay(500);
 
   pinMode(PINO_RELE_BOMBA, OUTPUT);
@@ -290,8 +291,11 @@ float lerUmidadeAr() {
 }
 
 bool enviarLeitura() {
+  WiFiClientSecure cliente;
+  cliente.setInsecure();
   HTTPClient http;
-  http.begin(String(API_URL) + "/api/sensores");
+  http.setTimeout(15000);
+  http.begin(cliente, String(API_URL) + "/api/sensores");
   http.addHeader("Content-Type", "application/json");
 
   float temperatura = lerTemperatura();
@@ -317,21 +321,34 @@ bool enviarLeitura() {
 
   int codigoResposta = http.POST(corpo);
   Serial.println("Envio de leitura -> HTTP " + String(codigoResposta));
+  if (codigoResposta <= 0) {
+    Serial.println("Erro HTTPS ao enviar leitura: " + http.errorToString(codigoResposta));
+  } else if (codigoResposta < 200 || codigoResposta >= 300) {
+    Serial.println("Resposta da API: " + http.getString());
+  }
 
   http.end();
   return codigoResposta >= 200 && codigoResposta < 300;
 }
 
 void verificarComandoPendente() {
+  WiFiClientSecure cliente;
+  cliente.setInsecure();
   HTTPClient http;
-  http.begin(String(API_URL) + "/api/comando?codigo=" + codigoDispositivo + "&tokenDispositivo=" + tokenDispositivo);
+  http.setTimeout(15000);
+  http.begin(cliente, String(API_URL) + "/api/comando?codigo=" + codigoDispositivo + "&tokenDispositivo=" + tokenDispositivo);
 
   int codigoResposta = http.GET();
   if (codigoResposta == 200) {
     String resposta = http.getString();
 
     StaticJsonDocument<256> doc;
-    deserializeJson(doc, resposta);
+    DeserializationError erro = deserializeJson(doc, resposta);
+    if (erro) {
+      Serial.println("Resposta de comando invalida: " + resposta);
+      http.end();
+      return;
+    }
 
     if (!doc["bomba"].isNull()) {
       bool ligar = doc["bomba"];
@@ -341,19 +358,30 @@ void verificarComandoPendente() {
       int idComando = doc["id"];
       confirmarComandoExecutado(idComando);
     }
+  } else if (codigoResposta <= 0) {
+    Serial.println("Erro HTTPS ao consultar comando: " + http.errorToString(codigoResposta));
+  } else {
+    Serial.println("Consulta de comando -> HTTP " + String(codigoResposta) + ": " + http.getString());
   }
 
   http.end();
 }
 
 void confirmarComandoExecutado(int id) {
+  WiFiClientSecure cliente;
+  cliente.setInsecure();
   HTTPClient http;
-  http.begin(String(API_URL) + "/api/comando/" + String(id) + "/concluido");
+  http.setTimeout(15000);
+  http.begin(cliente, String(API_URL) + "/api/comando/" + String(id) + "/concluido");
   http.addHeader("Content-Type", "application/json");
   StaticJsonDocument<128> doc;
   doc["tokenDispositivo"] = tokenDispositivo;
   String corpo;
   serializeJson(doc, corpo);
-  http.POST(corpo);
+  int codigoResposta = http.POST(corpo);
+  Serial.println("Confirmacao do comando " + String(id) + " -> HTTP " + String(codigoResposta));
+  if (codigoResposta <= 0) {
+    Serial.println("Erro HTTPS ao confirmar comando: " + http.errorToString(codigoResposta));
+  }
   http.end();
 }
