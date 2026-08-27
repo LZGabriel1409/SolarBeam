@@ -50,7 +50,20 @@ async function obterStatus(req, res) {
     }
 
     const leitura = resultado.rows[0];
-    const bateriaPercentual = Math.max(0, Math.min(100, Math.round(((leitura.bateria - 3) / 1.2) * 100)));
+
+    const dataLeituraMs = new Date(`${leitura.data_hora}Z`).getTime();
+    const online = Number.isFinite(dataLeituraMs) && (Date.now() - dataLeituraMs <= 120000);
+
+    const bateriaPercentual = Math.max(
+      0,
+      Math.min(100, Math.round(((leitura.bateria - 3) / 1.2) * 100))
+    );
+
+    // O ESP só pode ser considerado conectado aos serviços enquanto existe
+    // uma leitura recente. Assim, um ESP offline nunca aparece como Wi-Fi
+    // conectado ou energia solar ativa na dashboard.
+    const wifi = online;
+    const energiaSolar = online && Number(leitura.bateria) > 3.0;
 
     res.json({
       umidade: leitura.umidade,
@@ -60,7 +73,9 @@ async function obterStatus(req, res) {
       autonomiaEstimada: bateriaPercentual > 0 ? `${Math.max(1, Math.round(bateriaPercentual / 8))}h` : '--',
       bomba: Boolean(leitura.bomba),
       versaoFirmware: leitura.versao_firmware,
-      online: Date.now() - new Date(`${leitura.data_hora}Z`).getTime() <= 120000,
+      online,
+      wifi,
+      energiaSolar,
       ultimaAtualizacao: paraHorarioBrasilia(leitura.data_hora),
     });
   } catch (err) {

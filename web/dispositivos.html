@@ -136,8 +136,15 @@
                             <input type="text" id="localizacaoDispositivo" placeholder="Ex: Estufa norte">
                         </div>
                         <div class="simulador-campo">
-                            <label for="fotoDispositivo">Foto do ESP (URL)</label>
-                            <input type="url" id="fotoDispositivo" placeholder="https://...">
+                            <label for="fotoDispositivo">Foto do ESP</label>
+                            <input type="file" id="fotoDispositivo" accept="image/*">
+                            <small class="campo-ajuda">Escolha uma imagem da galeria do celular ou computador. Máximo recomendado: 2 MB.</small>
+                            <div id="previewFotoDispositivo" class="foto-preview" hidden>
+                                <img id="previewFotoImagem" alt="Pré-visualização da foto do ESP">
+                                <button type="button" id="btnRemoverFoto" class="foto-preview-remove">
+                                    <i class="fa-solid fa-xmark"></i> Remover foto
+                                </button>
+                            </div>
                         </div>
                         <button type="submit" id="btnAdicionarDispositivo">
                             <i class="fa-solid fa-plus"></i>

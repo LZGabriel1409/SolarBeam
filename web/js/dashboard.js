@@ -300,8 +300,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
             atualizarStatusSistema(
                 wifiStatus,
-                "Indisponível",
+                "Desconectado",
                 "offline"
+            );
+
+            atualizarStatusSistema(
+                solarStatus,
+                "Inativa",
+                "warning"
             );
 
             adicionarAlerta(
@@ -359,16 +365,16 @@ document.addEventListener("DOMContentLoaded", () => {
         if (wifiStatus) {
             atualizarStatusSistema(
                 wifiStatus,
-                dados.wifi === false ? "Desconectado" : "Conectado",
-                dados.wifi === false ? "offline" : "online"
+                dados.wifi === true ? "Conectado" : "Desconectado",
+                dados.wifi === true ? "online" : "offline"
             );
         }
 
         if (solarStatus) {
             atualizarStatusSistema(
                 solarStatus,
-                dados.energiaSolar === false ? "Inativa" : "Ativa",
-                dados.energiaSolar === false ? "warning" : "online"
+                dados.energiaSolar === true ? "Ativa" : "Inativa",
+                dados.energiaSolar === true ? "online" : "warning"
             );
         }
     }

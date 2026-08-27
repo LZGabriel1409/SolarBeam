@@ -6,6 +6,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const codigoBox = document.getElementById("codigoGerado");
     const codigoTexto = document.getElementById("codigoTexto");
 
+    const fotoDispositivo = document.getElementById("fotoDispositivo");
+    const previewFotoDispositivo = document.getElementById("previewFotoDispositivo");
+    const previewFotoImagem = document.getElementById("previewFotoImagem");
+    const btnRemoverFoto = document.getElementById("btnRemoverFoto");
+    let fotoDataUrl = ""; 
+
     // --- Provisionamento via USB (Web Serial) ---
     const seletor = document.getElementById("seletorDispositivo");
     const btnConectar = document.getElementById("btnConectar");
@@ -31,6 +37,8 @@ document.addEventListener("DOMContentLoaded", () => {
         btnConectar.disabled = true;
     }
 
+    prepararSeletorFoto();
+
     carregarDispositivos();
 
     form.addEventListener("submit", async (event) => {
@@ -38,13 +46,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const nome = document.getElementById("nomeDispositivo").value.trim();
         const localizacao = document.getElementById("localizacaoDispositivo").value.trim();
-        const fotoUrl = document.getElementById("fotoDispositivo").value.trim();
+
+        if (fotoDispositivo?.files?.[0] && !fotoDataUrl) {
+            mostrarMensagem("Aguarde o carregamento da foto ou escolha outra imagem.", "warning");
+            return;
+        }
 
         try {
             const resposta = await fetch(`${API_URL}/api/dispositivos`, {
                 method: "POST",
                 headers: solarbeamAuthHeaders(),
-                body: JSON.stringify({ nome, localizacao: localizacao || null, fotoUrl: fotoUrl || null }),
+                body: JSON.stringify({
+                    nome,
+                    localizacao: localizacao || null,
+                    fotoUrl: fotoDataUrl || null
+                }),
             });
 
             const dados = await resposta.json();
@@ -58,6 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
             codigoTexto.textContent = dados.codigo;
             codigoBox.style.display = "block";
             form.reset();
+            limparFotoSelecionada();
             await carregarDispositivos();
 
             // Já deixa selecionado no provisionamento para o usuário só conectar o USB
@@ -142,6 +159,86 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Erro ao carregar dispositivos:", err);
             lista.innerHTML = `<p style="color:#F87171; font-size:13px;">Não foi possível conectar ao servidor.</p>`;
         }
+    }
+
+    function prepararSeletorFoto() {
+        fotoDispositivo?.addEventListener("change", async () => {
+            const arquivo = fotoDispositivo.files?.[0];
+
+            if (!arquivo) {
+                limparFotoSelecionada();
+                return;
+            }
+
+            if (!arquivo.type.startsWith("image/")) {
+                mostrarMensagem("Selecione um arquivo de imagem válido.", "error");
+                limparFotoSelecionada();
+                return;
+            }
+
+            // Evita mandar arquivos enormes para a API.
+            if (arquivo.size > 2 * 1024 * 1024) {
+                mostrarMensagem("A imagem deve ter no máximo 2 MB.", "error");
+                limparFotoSelecionada();
+                return;
+            }
+
+            try {
+                fotoDataUrl = await redimensionarFoto(arquivo);
+
+                if (previewFotoImagem) previewFotoImagem.src = fotoDataUrl;
+                if (previewFotoDispositivo) previewFotoDispositivo.hidden = false;
+                mostrarMensagem("Foto selecionada.", "success");
+            } catch (error) {
+                console.error("Erro ao preparar foto:", error);
+                mostrarMensagem("Não foi possível carregar essa imagem.", "error");
+                limparFotoSelecionada();
+            }
+        });
+
+        btnRemoverFoto?.addEventListener("click", () => {
+            limparFotoSelecionada();
+        });
+    }
+
+    function redimensionarFoto(arquivo) {
+        return new Promise((resolve, reject) => {
+            const leitor = new FileReader();
+
+            leitor.onload = () => {
+                const imagem = new Image();
+
+                imagem.onload = () => {
+                    const tamanhoMaximo = 1200;
+                    const escala = Math.min(1, tamanhoMaximo / Math.max(imagem.width, imagem.height));
+                    const largura = Math.max(1, Math.round(imagem.width * escala));
+                    const altura = Math.max(1, Math.round(imagem.height * escala));
+
+                    const canvas = document.createElement("canvas");
+                    canvas.width = largura;
+                    canvas.height = altura;
+
+                    const contexto = canvas.getContext("2d");
+                    contexto.drawImage(imagem, 0, 0, largura, altura);
+
+                    // JPEG deixa a foto bem menor e continua ótima para a miniatura.
+                    resolve(canvas.toDataURL("image/jpeg", 0.78));
+                };
+
+                imagem.onerror = () => reject(new Error("Imagem inválida."));
+                imagem.src = leitor.result;
+            };
+
+            leitor.onerror = () => reject(new Error("Falha ao ler o arquivo."));
+            leitor.readAsDataURL(arquivo);
+        });
+    }
+
+    function limparFotoSelecionada() {
+        fotoDataUrl = "";
+        if (fotoDispositivo) fotoDispositivo.value = "";
+        if (previewFotoImagem) previewFotoImagem.removeAttribute("src");
+        if (previewFotoDispositivo) previewFotoDispositivo.hidden = true;
     }
 
     async function renomearDispositivo(id) {

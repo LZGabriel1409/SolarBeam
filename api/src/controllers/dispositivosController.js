@@ -9,6 +9,15 @@ function gerarCodigo() {
 
 function fotoUrlValida(fotoUrl) {
   if (fotoUrl == null || fotoUrl === '') return true;
+
+  // A interface também pode enviar uma imagem escolhida da galeria
+  // como Data URL. Limitamos o tamanho para não transformar a foto
+  // em um arquivo enorme dentro do banco.
+  if (typeof fotoUrl === 'string' && fotoUrl.startsWith('data:image/')) {
+    const imagemValida = /^data:image\/(jpeg|jpg|png|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(fotoUrl);
+    return imagemValida && fotoUrl.length <= 3500000;
+  }
+
   try {
     return ['http:', 'https:'].includes(new URL(fotoUrl).protocol);
   } catch {
@@ -60,7 +69,7 @@ async function criarDispositivo(req, res) {
     return res.status(400).json({ erro: 'Nome do dispositivo e obrigatorio.' });
   }
   if (!fotoUrlValida(fotoUrl)) {
-    return res.status(400).json({ erro: 'A foto deve usar uma URL http ou https valida.' });
+    return res.status(400).json({ erro: 'A foto deve ser uma imagem válida ou uma URL http/https.' });
   }
 
   try {
@@ -106,7 +115,7 @@ async function renomearDispositivo(req, res) {
     return res.status(400).json({ erro: 'Informe ao menos um campo para atualizar.' });
   }
   if (!fotoUrlValida(fotoUrl)) {
-    return res.status(400).json({ erro: 'A foto deve usar uma URL http ou https valida.' });
+    return res.status(400).json({ erro: 'A foto deve ser uma imagem válida ou uma URL http/https.' });
   }
 
   try {
@@ -158,7 +167,22 @@ async function removerDispositivo(req, res) {
       return res.status(403).json({ erro: 'Voce nao tem permissao para remover esse dispositivo.' });
     }
 
-    await db.execute({ sql: `DELETE FROM dispositivos WHERE id = ?`, args: [id] });
+    // Leituras e comandos dependem do dispositivo. Remova primeiro os registros
+    // relacionados para que o DELETE do ESP nunca fique bloqueado por FK.
+    await db.execute({
+      sql: `DELETE FROM leituras WHERE dispositivo_id = ?`,
+      args: [id],
+    });
+
+    await db.execute({
+      sql: `DELETE FROM comandos WHERE dispositivo_id = ?`,
+      args: [id],
+    });
+
+    await db.execute({
+      sql: `DELETE FROM dispositivos WHERE id = ?`,
+      args: [id],
+    });
 
     res.json({ mensagem: 'Dispositivo removido com sucesso.' });
   } catch (err) {

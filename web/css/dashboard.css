@@ -1999,3 +1999,221 @@
         padding: 28px;
     }
 }
+
+/* ==========================================================
+   31. CORREÇÕES FINAIS — RESPONSIVIDADE E FOTO DO ESP
+========================================================== */
+
+html,
+body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.dashboard-container,
+.main-content,
+.dashboard-grid,
+.panel,
+.card,
+.simulador-form,
+.simulador-campo {
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.main-content {
+    width: auto;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.panel-header h2,
+.topbar h1,
+.panel p,
+.simulador-mensagem,
+.connection-guide,
+.connection-guide-step {
+    overflow-wrap: anywhere;
+}
+
+#fotoDispositivo {
+    min-height: 46px;
+    padding: 9px 10px;
+}
+
+.campo-ajuda {
+    display: block;
+    margin-top: -1px;
+    color: var(--text-secondary);
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.foto-preview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px;
+    background: rgba(255,255,255,.03);
+}
+
+.foto-preview img {
+    display: block;
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,.10);
+}
+
+.foto-preview-remove {
+    min-height: 38px;
+    padding: 8px 12px;
+    border: 1px solid rgba(248,113,113,.30);
+    border-radius: 9px;
+    background: transparent;
+    color: #F87171;
+    cursor: pointer;
+    font: 500 12px Poppins, sans-serif;
+}
+
+#listaDispositivos .status-item > div {
+    min-width: 0;
+    flex-wrap: wrap;
+}
+
+#listaDispositivos .status-item > div > div {
+    max-width: 100%;
+    flex-wrap: wrap;
+}
+
+#listaDispositivos .status-item button,
+#listaDispositivos .status-item a {
+    white-space: nowrap;
+}
+
+/* Tablets */
+@media (max-width: 992px) {
+    .main-content {
+        width: calc(100% - var(--sidebar-closed) - var(--content-gap));
+        max-width: calc(100% - var(--sidebar-closed) - var(--content-gap));
+    }
+
+    .sidebar:not(.collapsed) ~ .main-content {
+        width: calc(100% - var(--sidebar-open) - var(--content-gap));
+        max-width: calc(100% - var(--sidebar-open) - var(--content-gap));
+    }
+}
+
+/* Celulares */
+@media (max-width: 600px) {
+    .main-content,
+    .sidebar:not(.collapsed) ~ .main-content {
+        width: calc(100% - var(--sidebar-mobile-closed) - 16px);
+        max-width: calc(100% - var(--sidebar-mobile-closed) - 16px);
+    }
+
+    .sidebar:not(.collapsed) ~ .main-content {
+        width: calc(100% - var(--sidebar-mobile-open) - 16px);
+        max-width: calc(100% - var(--sidebar-mobile-open) - 16px);
+    }
+
+    .topbar {
+        padding: 16px;
+    }
+
+    .topbar h1 {
+        font-size: clamp(22px, 7vw, 28px);
+        line-height: 1.15;
+    }
+
+    .topbar p {
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .panel {
+        padding: 16px;
+        border-radius: 16px;
+    }
+
+    .panel-header h2 {
+        font-size: 18px;
+    }
+
+    .card {
+        padding: 16px;
+        border-radius: 16px;
+    }
+
+    .simulador-form {
+        gap: 13px;
+    }
+
+    .simulador-form > button,
+    .button-row button,
+    .connection-guide + div button {
+        width: 100%;
+    }
+
+    .connection-guide-step {
+        padding: 12px;
+    }
+
+    .foto-preview {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .foto-preview img {
+        width: 100%;
+        max-width: 180px;
+        height: 140px;
+    }
+
+    .foto-preview-remove {
+        width: 100%;
+    }
+
+    #listaDispositivos .status-item > div {
+        align-items: flex-start !important;
+    }
+
+    #listaDispositivos .status-item > div > div {
+        width: 100%;
+    }
+
+    #listaDispositivos .status-item > div > div a,
+    #listaDispositivos .status-item > div > div button {
+        flex: 1 1 auto;
+        text-align: center;
+    }
+}
+
+/* Celulares pequenos */
+@media (max-width: 420px) {
+    .main-content,
+    .sidebar:not(.collapsed) ~ .main-content {
+        width: calc(100% - var(--sidebar-mobile-closed) - 10px);
+        max-width: calc(100% - var(--sidebar-mobile-closed) - 10px);
+        padding-right: 10px;
+    }
+
+    .sidebar:not(.collapsed) ~ .main-content {
+        width: calc(100% - var(--sidebar-mobile-open) - 10px);
+        max-width: calc(100% - var(--sidebar-mobile-open) - 10px);
+    }
+
+    .topbar-right {
+        width: 100%;
+    }
+
+    .user-info {
+        min-width: 0;
+    }
+}
