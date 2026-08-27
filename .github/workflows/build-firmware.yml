@@ -29,7 +29,10 @@ jobs:
           arduino-cli core install esp32:esp32
 
       - name: Install libraries
-        run: arduino-cli lib install ArduinoJson
+        run: |
+          arduino-cli lib install ArduinoJson
+          arduino-cli lib install "DHT sensor library"
+          arduino-cli lib install "Adafruit Unified Sensor"
 
       - name: Compile firmware
         run: |
