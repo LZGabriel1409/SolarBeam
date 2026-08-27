@@ -390,7 +390,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
             if (!porta.readable) {
-                await porta.open({ baudRate: 460800 });
+                await porta.open({ baudRate: 115200 });
                 lerSerialContinuamente();
             }
             const confirmacao = aguardarConfirmacaoSerial();
@@ -456,7 +456,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // (1 caractere = 1 byte), não como Uint8Array.
         const dadosBstr = ui8ToBstr(dados);
 
-        const BAUD_RATES = [460800];
+        const BAUD_RATES = [460800, 115200];
 
         for (let tentativa = 0; tentativa < BAUD_RATES.length; tentativa++) {
             const baudrate = BAUD_RATES[tentativa];
@@ -474,7 +474,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     firmwareProgress.style.width = "0%";
                 }
 
-                const loader = new ESPLoader({ transport, baudrate, terminal });
+                const loader = new ESPLoader({
+                    transport,
+                    baudrate,
+                    romBaudrate: 115200,
+                    terminal,
+                });
                 await loader.main();
                 await loader.writeFlash({
                     fileArray: [{ data: dadosBstr, address: 0 }],
