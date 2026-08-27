@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const previewFotoDispositivo = document.getElementById("previewFotoDispositivo");
     const previewFotoImagem = document.getElementById("previewFotoImagem");
     const btnRemoverFoto = document.getElementById("btnRemoverFoto");
+    const nomeFotoSelecionada = document.getElementById("nomeFotoSelecionada");
     let fotoDataUrl = ""; 
 
     // --- Provisionamento via USB (Web Serial) ---
@@ -184,11 +185,17 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             try {
+                if (nomeFotoSelecionada) {
+                    nomeFotoSelecionada.textContent = arquivo.name;
+                    nomeFotoSelecionada.title = arquivo.name;
+                }
+
                 fotoDataUrl = await redimensionarFoto(arquivo);
 
+                if (!fotoDataUrl) throw new Error("Não foi possível gerar a imagem.");
                 if (previewFotoImagem) previewFotoImagem.src = fotoDataUrl;
                 if (previewFotoDispositivo) previewFotoDispositivo.hidden = false;
-                mostrarMensagem("Foto selecionada.", "success");
+                mostrarMensagem("Foto selecionada com sucesso.", "success");
             } catch (error) {
                 console.error("Erro ao preparar foto:", error);
                 mostrarMensagem("Não foi possível carregar essa imagem.", "error");
@@ -239,6 +246,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (fotoDispositivo) fotoDispositivo.value = "";
         if (previewFotoImagem) previewFotoImagem.removeAttribute("src");
         if (previewFotoDispositivo) previewFotoDispositivo.hidden = true;
+        if (nomeFotoSelecionada) {
+            nomeFotoSelecionada.textContent = "Nenhuma imagem selecionada";
+            nomeFotoSelecionada.removeAttribute("title");
+        }
     }
 
     async function renomearDispositivo(id) {

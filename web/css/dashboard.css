@@ -2042,6 +2042,46 @@ body {
     padding: 9px 10px;
 }
 
+.foto-seletor {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    width: 100%;
+}
+
+.btn-selecionar-foto {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 46px;
+    padding: 10px 14px;
+    box-sizing: border-box;
+    border: 1px solid rgba(34,197,94,.35);
+    border-radius: 12px;
+    background: rgba(34,197,94,.08);
+    color: var(--solar-green);
+    cursor: pointer;
+    font: 500 13px Poppins, sans-serif;
+    text-align: center;
+    transition: .2s ease;
+}
+
+.btn-selecionar-foto:hover {
+    background: rgba(34,197,94,.14);
+    border-color: rgba(34,197,94,.55);
+}
+
+.nome-foto-selecionada {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
 .campo-ajuda {
     display: block;
     margin-top: -1px;
@@ -2163,6 +2203,20 @@ body {
 
     .connection-guide-step {
         padding: 12px;
+    }
+
+    .foto-seletor {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn-selecionar-foto {
+        width: 100%;
+    }
+
+    .nome-foto-selecionada {
+        width: 100%;
+        text-align: center;
     }
 
     .foto-preview {

@@ -27,7 +27,8 @@ app.use(cors({
 }));
 
 app.use(morgan('dev'));
-app.use(express.json());
+// Permite enviar fotos do ESP em Base64 sem estourar o limite padrão de ~100 KB do Express.
+app.use(express.json({ limit: '5mb' }));
 
 // Limita tentativas de login para dificultar forca bruta
 const limiteLogin = rateLimit({
