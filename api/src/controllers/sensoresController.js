@@ -13,17 +13,31 @@ function tokenValido(esperado, recebido) {
 }
 
 async function receberLeitura(req, res) {
-  const { umidade, nivelAgua, bateria, bomba, codigoDispositivo, tokenDispositivo, versaoFirmware } = req.body;
+  const {
+    umidade,
+    nivelAgua,
+    bateria,
+    bomba,
+    temperatura,
+    umidadeAr,
+    codigoDispositivo,
+    tokenDispositivo,
+    versaoFirmware,
+  } = req.body;
 
   if (
     !codigoDispositivo ||
     typeof umidade !== 'number' ||
     typeof nivelAgua !== 'number' ||
     typeof bateria !== 'number' ||
-    typeof bomba !== 'boolean'
+    typeof bomba !== 'boolean' ||
+    (temperatura !== undefined && temperatura !== null && typeof temperatura !== 'number') ||
+    (umidadeAr !== undefined && umidadeAr !== null && typeof umidadeAr !== 'number')
   ) {
     return res.status(400).json({
-      erro: 'Dados invalidos. Esperado: umidade (number), nivelAgua (number), bateria (number), bomba (boolean).',
+      erro:
+        'Dados invalidos. Esperado: umidade (number), nivelAgua (number), bateria (number), bomba (boolean), ' +
+        'temperatura (number, opcional), umidadeAr (number, opcional).',
     });
   }
 
@@ -46,8 +60,17 @@ async function receberLeitura(req, res) {
     dispositivoId = dispositivo.rows[0].id;
 
     await db.execute({
-      sql: `INSERT INTO leituras (umidade, nivel_agua, bateria, bomba, dispositivo_id, versao_firmware) VALUES (?, ?, ?, ?, ?, ?)`,
-      args: [umidade, nivelAgua, bateria, bomba ? 1 : 0, dispositivoId, versaoFirmware || null],
+      sql: `INSERT INTO leituras (umidade, nivel_agua, bateria, bomba, dispositivo_id, versao_firmware, temperatura, umidade_ar) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        umidade,
+        nivelAgua,
+        bateria,
+        bomba ? 1 : 0,
+        dispositivoId,
+        versaoFirmware || null,
+        temperatura ?? null,
+        umidadeAr ?? null,
+      ],
     });
 
     await db.execute({
