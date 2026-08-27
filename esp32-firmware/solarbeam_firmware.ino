@@ -14,6 +14,7 @@ const int PINO_NIVEL_AGUA = 35;  // sensor de nivel de agua (entrada analogica)
 const int PINO_BATERIA = 33;     // leitura da tensao da bateria (entrada analogica)
 const int PINO_RELE_BOMBA = 27;  // rele que aciona a bomba (saida digital)
 const int PINO_DHT11 = 26;       // sensor de temperatura/umidade do ar (dados digitais)
+const bool RELE_ATIVO_EM_LOW = true;
 
 #define TIPO_DHT DHT11
 DHT dht(PINO_DHT11, TIPO_DHT);
@@ -44,7 +45,7 @@ void setup() {
   delay(500);
 
   pinMode(PINO_RELE_BOMBA, OUTPUT);
-  digitalWrite(PINO_RELE_BOMBA, LOW);
+  definirBomba(false);
 
   dht.begin();
 
@@ -272,6 +273,17 @@ float lerBateria() {
   return tensao;
 }
 
+void definirBomba(bool ligada) {
+  bool nivelAtivo = RELE_ATIVO_EM_LOW ? LOW : HIGH;
+  bool nivelInativo = RELE_ATIVO_EM_LOW ? HIGH : LOW;
+  digitalWrite(PINO_RELE_BOMBA, ligada ? nivelAtivo : nivelInativo);
+}
+
+bool bombaLigada() {
+  int nivelAtivo = RELE_ATIVO_EM_LOW ? LOW : HIGH;
+  return digitalRead(PINO_RELE_BOMBA) == nivelAtivo;
+}
+
 float lerTemperatura() {
   float temperatura = dht.readTemperature();
   if (isnan(temperatura)) {
@@ -305,7 +317,7 @@ bool enviarLeitura() {
   doc["umidade"] = lerUmidade();
   doc["nivelAgua"] = lerNivelAgua();
   doc["bateria"] = lerBateria();
-  doc["bomba"] = digitalRead(PINO_RELE_BOMBA) == HIGH;
+  doc["bomba"] = bombaLigada();
   if (!isnan(temperatura)) {
     doc["temperatura"] = temperatura;
   }
@@ -352,7 +364,7 @@ void verificarComandoPendente() {
 
     if (!doc["bomba"].isNull()) {
       bool ligar = doc["bomba"];
-      digitalWrite(PINO_RELE_BOMBA, ligar ? HIGH : LOW);
+      definirBomba(ligar);
       Serial.println("Comando aplicado: bomba " + String(ligar ? "LIGADA" : "DESLIGADA"));
 
       int idComando = doc["id"];
