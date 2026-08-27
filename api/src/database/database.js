@@ -55,6 +55,8 @@ async function initDatabase() {
   `);
   await adicionarColunaSeNaoExistir('leituras', 'dispositivo_id', 'dispositivo_id INTEGER');
   await adicionarColunaSeNaoExistir('leituras', 'versao_firmware', 'versao_firmware TEXT');
+  await adicionarColunaSeNaoExistir('leituras', 'temperatura', 'temperatura REAL');
+  await adicionarColunaSeNaoExistir('leituras', 'umidade_ar', 'umidade_ar REAL');
   await adicionarColunaSeNaoExistir('dispositivos', 'firmware_configurado', 'firmware_configurado INTEGER NOT NULL DEFAULT 0');
   await adicionarColunaSeNaoExistir('dispositivos', 'ultima_leitura', 'ultima_leitura TEXT');
   await adicionarColunaSeNaoExistir('dispositivos', 'versao_firmware', 'versao_firmware TEXT');
