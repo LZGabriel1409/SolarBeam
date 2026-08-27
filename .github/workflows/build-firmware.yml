@@ -66,6 +66,14 @@ jobs:
       - name: Generate checksum
         run: sha256sum build/solarbeamfirmware.bin > build/solarbeamfirmware.bin.sha256
 
+      - name: Package firmware release
+        run: |
+          mkdir -p build/release-package
+          cp build/solarbeamfirmware.bin build/solarbeamfirmware.bin.sha256 esp32-firmware/README.md build/release-package/
+          printf 'SolarBeam firmware\nBaud rate: 40\nDHT11: GPIO 26\nRelay: GPIO 27\n' > build/release-package/RELEASE.txt
+          cd build/release-package
+          zip -q ../solarbeam-firmware-release.zip solarbeamfirmware.bin solarbeamfirmware.bin.sha256 README.md RELEASE.txt
+
       - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
         with:
@@ -73,6 +81,7 @@ jobs:
           path: |
             build/solarbeamfirmware.bin
             build/solarbeamfirmware.bin.sha256
+            build/solarbeam-firmware-release.zip
 
       - name: Publish tagged firmware release
         if: startsWith(github.ref, 'refs/tags/')
@@ -81,3 +90,4 @@ jobs:
           files: |
             build/solarbeamfirmware.bin
             build/solarbeamfirmware.bin.sha256
+            build/solarbeam-firmware-release.zip

@@ -25,6 +25,9 @@ conectado por USB. O dispositivo deve estar em modo de bootloader quando a
 gravação começar; normalmente isso acontece automaticamente, mas algumas
 placas exigem segurar `BOOT` durante a conexão.
 
+Nas releases do projeto, baixe `solarbeam-firmware-release.zip` para receber o
+firmware mesclado, o checksum e estas instruções em um único pacote.
+
 ## Configuração do Wi-Fi pelo portal cativo
 
 Depois de gravar o firmware, o ESP32 abre a rede Wi-Fi `SolarBeam` quando não
