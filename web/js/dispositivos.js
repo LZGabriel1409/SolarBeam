@@ -390,7 +390,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
             if (!porta.readable) {
-                await porta.open({ baudRate: 40 });
+                await porta.open({ baudRate: 460800 });
                 lerSerialContinuamente();
             }
             const confirmacao = aguardarConfirmacaoSerial();
@@ -456,7 +456,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // (1 caractere = 1 byte), não como Uint8Array.
         const dadosBstr = ui8ToBstr(dados);
 
-        const BAUD_RATES = [40];
+        const BAUD_RATES = [460800];
 
         for (let tentativa = 0; tentativa < BAUD_RATES.length; tentativa++) {
             const baudrate = BAUD_RATES[tentativa];
