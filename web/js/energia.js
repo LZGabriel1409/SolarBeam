@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const TENSAO_MINIMA = 3.0; // referencia tipica de bateria descarregada
 
     if (!dispositivo) {
-        window.location.replace("dispositivos.html");
+        window.location.replace("dispositivos");
         return;
     }
 

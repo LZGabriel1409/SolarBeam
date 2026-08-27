@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const dispositivo = solarbeamGetDispositivoAtual();
 
     if (!dispositivo) {
-        window.location.replace("dispositivos.html");
+        window.location.replace("dispositivos");
         return;
     }
 
