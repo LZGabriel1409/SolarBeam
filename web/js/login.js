@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             setTimeout(() => {
                 window.location.href = dados.role === "admin"
-                    ? "dashboard.html"
+                    ? "dashboard"
                     : "dispositivos.html?setup=1";
             }, 800);
 
