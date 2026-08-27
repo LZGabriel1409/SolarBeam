@@ -4,6 +4,7 @@
 #include <ArduinoJson.h>
 #include <WebServer.h>
 #include <DNSServer.h>
+#include <DHT.h>
 
 const char* API_URL = "https://api-solarbeam.onrender.com";
 const char* VERSAO_FIRMWARE = "1.0.0";
@@ -11,6 +12,10 @@ const int PINO_UMIDADE = 34;     // sensor de umidade do solo (entrada analogica
 const int PINO_NIVEL_AGUA = 35;  // sensor de nivel de agua (entrada analogica)
 const int PINO_BATERIA = 33;     // leitura da tensao da bateria (entrada analogica)
 const int PINO_RELE_BOMBA = 26;  // rele que aciona a bomba (saida digital)
+const int PINO_DHT11 = 27;       // sensor de temperatura/umidade do ar (dados digitais)
+
+#define TIPO_DHT DHT11
+DHT dht(PINO_DHT11, TIPO_DHT);
 
 const char* AP_NOME = "SolarBeam";
 const IPAddress AP_IP(192, 168, 4, 1);
@@ -39,6 +44,8 @@ void setup() {
 
   pinMode(PINO_RELE_BOMBA, OUTPUT);
   digitalWrite(PINO_RELE_BOMBA, LOW);
+
+  dht.begin();
 
   preferencias.begin("solarbeam", false);
   codigoDispositivo = preferencias.getString("codigo", "");
@@ -264,16 +271,43 @@ float lerBateria() {
   return tensao;
 }
 
+float lerTemperatura() {
+  float temperatura = dht.readTemperature();
+  if (isnan(temperatura)) {
+    Serial.println("Falha ao ler temperatura do DHT11.");
+    return NAN;
+  }
+  return temperatura;
+}
+
+float lerUmidadeAr() {
+  float umidadeAr = dht.readHumidity();
+  if (isnan(umidadeAr)) {
+    Serial.println("Falha ao ler umidade do ar do DHT11.");
+    return NAN;
+  }
+  return umidadeAr;
+}
+
 bool enviarLeitura() {
   HTTPClient http;
   http.begin(String(API_URL) + "/api/sensores");
   http.addHeader("Content-Type", "application/json");
 
-  StaticJsonDocument<256> doc;
+  float temperatura = lerTemperatura();
+  float umidadeAr = lerUmidadeAr();
+
+  StaticJsonDocument<320> doc;
   doc["umidade"] = lerUmidade();
   doc["nivelAgua"] = lerNivelAgua();
   doc["bateria"] = lerBateria();
   doc["bomba"] = digitalRead(PINO_RELE_BOMBA) == HIGH;
+  if (!isnan(temperatura)) {
+    doc["temperatura"] = temperatura;
+  }
+  if (!isnan(umidadeAr)) {
+    doc["umidadeAr"] = umidadeAr;
+  }
   doc["codigoDispositivo"] = codigoDispositivo;
   doc["tokenDispositivo"] = tokenDispositivo;
   doc["versaoFirmware"] = VERSAO_FIRMWARE;
