@@ -25,6 +25,18 @@ conectado por USB. O dispositivo deve estar em modo de bootloader quando a
 gravação começar; normalmente isso acontece automaticamente, mas algumas
 placas exigem segurar `BOOT` durante a conexão.
 
+## Modo automatico
+
+Na tela `Irrigação`, selecione `Automático`, informe a umidade mínima e o tempo
+da bomba e salve as configurações. O ESP32 consulta essa configuração a cada
+60 segundos. Quando a umidade do solo ficar abaixo do limite, ele liga a bomba
+pelo tempo definido e depois desliga. A bomba também é desligada se o nível de
+água ficar em 5% ou menos.
+
+Se a configuração não puder ser obtida, o ESP32 permanece em modo manual por
+segurança. Com o modo automático ativo, qualquer acionamento da bomba também
+fica limitado ao tempo configurado.
+
 Nas releases do projeto, baixe `solarbeamfirmware.bin` e
 `solarbeamfirmware.bin.sha256`. O primeiro e o firmware para gravacao; o segundo
 permite conferir a integridade do download.

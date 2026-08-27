@@ -1,4 +1,13 @@
 const { db } = require('../database/database');
+const crypto = require('crypto');
+
+function tokenValido(esperado, recebido) {
+  if (!esperado || !recebido) return false;
+  const esperadoBuffer = Buffer.from(esperado);
+  const recebidoBuffer = Buffer.from(recebido);
+  return esperadoBuffer.length === recebidoBuffer.length &&
+    crypto.timingSafeEqual(esperadoBuffer, recebidoBuffer);
+}
 
 async function obterConfig(req, res) {
   try {
@@ -62,4 +71,45 @@ async function atualizarConfig(req, res) {
   }
 }
 
-module.exports = { obterConfig, atualizarConfig };
+async function obterConfigDispositivo(req, res) {
+  const { codigo, tokenDispositivo } = req.query;
+
+  if (!codigo || !tokenDispositivo) {
+    return res.status(400).json({ erro: 'Codigo e token do dispositivo obrigatorios.' });
+  }
+
+  try {
+    const dispositivo = await db.execute({
+      sql: `SELECT token_dispositivo FROM dispositivos WHERE codigo = ?`,
+      args: [codigo],
+    });
+
+    if (dispositivo.rows.length === 0) {
+      return res.status(404).json({ erro: 'Codigo de dispositivo nao reconhecido.' });
+    }
+
+    if (!tokenValido(dispositivo.rows[0].token_dispositivo, tokenDispositivo)) {
+      return res.status(401).json({ erro: 'Token do dispositivo invalido.' });
+    }
+
+    const resultado = await db.execute(
+      `SELECT umidade_minima, tempo_bomba, modo FROM configuracoes ORDER BY id DESC LIMIT 1`
+    );
+    const config = resultado.rows[0] || {
+      umidade_minima: 30,
+      tempo_bomba: 10,
+      modo: 'automatico',
+    };
+
+    res.json({
+      umidadeMinima: config.umidade_minima,
+      tempoBomba: config.tempo_bomba,
+      modo: config.modo,
+    });
+  } catch (err) {
+    console.error('Erro ao buscar config do dispositivo:', err);
+    res.status(500).json({ erro: 'Erro ao buscar configuracoes.' });
+  }
+}
+
+module.exports = { obterConfig, atualizarConfig, obterConfigDispositivo };

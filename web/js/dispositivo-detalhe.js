@@ -69,6 +69,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function enviarComando(ligar) {
+        const botoes = [document.getElementById("pumpOn"), document.getElementById("pumpOff")].filter(Boolean);
+        botoes.forEach((botao) => { botao.disabled = true; });
         try {
             const resposta = await fetch(`${API_URL}/api/comando`, {
                 method: "POST",
@@ -94,6 +96,8 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (err) {
             console.error("Erro ao enviar comando:", err);
             alert("Não foi possível conectar ao servidor.");
+        } finally {
+            botoes.forEach((botao) => { botao.disabled = false; });
         }
     }
 

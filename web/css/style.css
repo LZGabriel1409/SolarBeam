@@ -8,6 +8,40 @@
     box-sizing: border-box;
 }
 
+button,
+a,
+input,
+select,
+textarea {
+    -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid rgba(251, 191, 36, 0.55);
+    outline-offset: 3px;
+}
+
+button:disabled {
+    cursor: wait;
+    opacity: 0.62;
+}
+
+@media (max-width: 700px) {
+    .page-main {
+        padding: 18px 14px;
+    }
+
+    .page-header {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 20px;
+    }
+}
+
 
 /* ==========================================================
    2. VARIÁVEIS GLOBAIS

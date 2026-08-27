@@ -35,6 +35,13 @@ unsigned long ultimoEnvio = 0;
 const unsigned long INTERVALO_ENVIO_MS = 60000;
 unsigned long ultimaVerificacaoComando = 0;
 const unsigned long INTERVALO_VERIFICACAO_COMANDO_MS = 5000;
+unsigned long ultimaAtualizacaoConfig = 0;
+const unsigned long INTERVALO_CONFIG_MS = 60000;
+unsigned long inicioIrrigacaoAutomatica = 0;
+bool configuracaoDisponivel = false;
+float umidadeMinima = 30.0;
+unsigned long tempoBombaMs = 10000;
+String modoOperacao = "manual";
 bool primeiraLeituraPendente = true;
 
 unsigned long inicioTentativaWifi = 0;
@@ -100,6 +107,10 @@ void loop() {
   inicioTentativaWifi = 0;
 
   if (codigoDispositivo != "") {
+    if (!configuracaoDisponivel || millis() - ultimaAtualizacaoConfig > INTERVALO_CONFIG_MS) {
+      atualizarConfiguracao();
+      ultimaAtualizacaoConfig = millis();
+    }
     if (primeiraLeituraPendente || millis() - ultimoEnvio > INTERVALO_ENVIO_MS) {
       if (enviarLeitura()) {
         ultimoEnvio = millis();
@@ -110,6 +121,7 @@ void loop() {
       verificarComandoPendente();
       ultimaVerificacaoComando = millis();
     }
+    executarIrrigacaoAutomatica();
   }
 }
 void iniciarPortalConfig() {
@@ -282,6 +294,63 @@ void definirBomba(bool ligada) {
 bool bombaLigada() {
   int nivelAtivo = RELE_ATIVO_EM_LOW ? LOW : HIGH;
   return digitalRead(PINO_RELE_BOMBA) == nivelAtivo;
+}
+
+void atualizarConfiguracao() {
+  WiFiClientSecure cliente;
+  cliente.setInsecure();
+  HTTPClient http;
+  http.setTimeout(15000);
+  String url = String(API_URL) + "/api/config/dispositivo?codigo=" + codigoDispositivo +
+    "&tokenDispositivo=" + tokenDispositivo;
+  http.begin(cliente, url);
+
+  int codigoResposta = http.GET();
+  if (codigoResposta == 200) {
+    StaticJsonDocument<256> doc;
+    DeserializationError erro = deserializeJson(doc, http.getString());
+    if (!erro && (doc["modo"] == "automatico" || doc["modo"] == "manual")) {
+      umidadeMinima = constrain((float)(doc["umidadeMinima"] | 30.0), 0.0, 100.0);
+      int segundos = doc["tempoBomba"] | 10;
+      tempoBombaMs = (unsigned long)constrain(segundos, 1, 3600) * 1000UL;
+      modoOperacao = doc["modo"].as<String>();
+      configuracaoDisponivel = true;
+      Serial.println("Configuracao atualizada: modo " + modoOperacao);
+    }
+  } else if (codigoResposta > 0) {
+    Serial.println("Configuração -> HTTP " + String(codigoResposta) + ": " + http.getString());
+  } else {
+    Serial.println("Erro HTTPS ao buscar configuracao: " + http.errorToString(codigoResposta));
+  }
+  http.end();
+}
+
+void executarIrrigacaoAutomatica() {
+  if (!configuracaoDisponivel || modoOperacao != "automatico") {
+    if (modoOperacao != "automatico" && bombaLigada()) definirBomba(false);
+    inicioIrrigacaoAutomatica = 0;
+    return;
+  }
+
+  float umidade = lerUmidade();
+  float nivelAgua = lerNivelAgua();
+
+  if (bombaLigada()) {
+    if (inicioIrrigacaoAutomatica == 0) inicioIrrigacaoAutomatica = millis();
+    if (nivelAgua <= 5.0 || millis() - inicioIrrigacaoAutomatica >= tempoBombaMs) {
+      definirBomba(false);
+      inicioIrrigacaoAutomatica = 0;
+      Serial.println(nivelAgua <= 5.0 ? "Bomba desligada: nivel de agua baixo." :
+        "Bomba desligada: tempo automatico concluido.");
+    }
+    return;
+  }
+
+  if (umidade < umidadeMinima && nivelAgua > 5.0) {
+    definirBomba(true);
+    inicioIrrigacaoAutomatica = millis();
+    Serial.println("Irrigacao automatica iniciada.");
+  }
 }
 
 float lerTemperatura() {

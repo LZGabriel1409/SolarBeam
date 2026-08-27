@@ -17,6 +17,10 @@ async function criarComando(req, res) {
     return res.status(400).json({ erro: 'Campo "bomba" deve ser boolean.' });
   }
 
+  if (!Number.isInteger(dispositivoId) || dispositivoId <= 0) {
+    return res.status(400).json({ erro: 'Campo "dispositivoId" deve ser um inteiro positivo.' });
+  }
+
   try {
     // Se veio dispositivoId, confere se o usuario e dono (ou admin)
     if (dispositivoId) {
@@ -36,7 +40,7 @@ async function criarComando(req, res) {
 
     await db.execute({
       sql: `INSERT INTO comandos (bomba, executado, dispositivo_id) VALUES (?, 0, ?)`,
-      args: [bomba ? 1 : 0, dispositivoId || null],
+      args: [bomba ? 1 : 0, dispositivoId],
     });
 
     res.status(201).json({ mensagem: 'Comando registrado com sucesso.' });

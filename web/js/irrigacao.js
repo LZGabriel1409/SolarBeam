@@ -3,11 +3,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const dispositivo = solarbeamGetDispositivoAtual();
 
     if (!dispositivo) {
-        window.location.replace("dispositivos");
+        window.location.replace("dispositivos.html");
         return;
     }
 
     async function command(bomba) {
+        const buttons = [get("pumpOn"), get("pumpOff")].filter(Boolean);
+        buttons.forEach((button) => { button.disabled = true; });
         try {
             const resposta = await fetch(`${API_URL}/api/comando`, {
                 method: "POST",
@@ -21,6 +23,8 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (error) {
             get("pumpMessage").textContent = error.message;
             get("pumpMessage").className = "message error";
+        } finally {
+            buttons.forEach((button) => { button.disabled = false; });
         }
     }
 
