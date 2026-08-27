@@ -966,3 +966,299 @@ body {
         padding-left: 8px;
     }
 }
+
+/* ==========================================================
+   18. RESPONSIVIDADE GLOBAL — PÁGINAS INTERNAS
+   Compatível com desktop, notebook, tablet e celular.
+========================================================== */
+
+html,
+body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+body {
+    min-width: 0;
+}
+
+.page-container,
+.page-main,
+.page-header,
+.page-grid,
+.page-card,
+.form-grid,
+.metric-grid,
+.data-list,
+.data-row,
+.table-wrap,
+.connection-guide,
+.connection-guide-step {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.page-main {
+    width: auto;
+    max-width: none;
+}
+
+.page-header h1,
+.page-header p,
+.page-card h2,
+.page-card h3,
+.page-card p,
+.data-row,
+.data-row * {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+/* Notebook / tela média */
+@media (max-width: 1200px) {
+    .sidebar,
+    .sidebar:not(.collapsed),
+    .sidebar.collapsed {
+        width: var(--pages-sidebar-closed);
+        min-width: var(--pages-sidebar-closed);
+    }
+
+    .sidebar .logo-name,
+    .sidebar .sidebar-nav li span,
+    .sidebar .sidebar-footer span {
+        width: 0;
+        max-width: 0;
+        opacity: 0;
+        overflow: hidden;
+        pointer-events: none;
+    }
+
+    .sidebar .sidebar-logo {
+        justify-content: center;
+    }
+
+    .sidebar .sidebar-nav li a,
+    .sidebar .sidebar-footer a {
+        justify-content: center;
+        gap: 0;
+    }
+
+    .page-main,
+    .sidebar:not(.collapsed) ~ .page-main,
+    .sidebar.collapsed ~ .page-main {
+        width: auto;
+        max-width: none;
+        margin-left: calc(var(--pages-sidebar-closed) + var(--pages-sidebar-gap));
+    }
+
+    .page-header {
+        padding: 20px 22px;
+    }
+
+    .page-header h1 {
+        font-size: clamp(27px, 3vw, 32px);
+    }
+
+    .page-grid {
+        gap: 18px;
+    }
+
+    .page-card {
+        padding: 22px;
+    }
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+    .page-main,
+    .sidebar:not(.collapsed) ~ .page-main,
+    .sidebar.collapsed ~ .page-main {
+        margin-left: calc(var(--pages-sidebar-closed) + 16px);
+        padding: 22px 18px 32px 0;
+    }
+
+    .page-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .page-card.full {
+        grid-column: auto;
+    }
+
+    .metric-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .form-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .connection-guide {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .sidebar:not(.collapsed) {
+        width: var(--sidebar-open);
+        min-width: var(--sidebar-open);
+        z-index: 1000;
+    }
+
+    .sidebar:not(.collapsed) .logo-name,
+    .sidebar:not(.collapsed) .sidebar-nav li span,
+    .sidebar:not(.collapsed) .sidebar-footer span {
+        width: auto;
+        max-width: 220px;
+        opacity: 1;
+        overflow: visible;
+        pointer-events: auto;
+    }
+
+    .sidebar:not(.collapsed) .sidebar-nav li a,
+    .sidebar:not(.collapsed) .sidebar-footer a {
+        justify-content: flex-start;
+        gap: 14px;
+    }
+}
+
+/* Celular */
+@media (max-width: 600px) {
+    .page-main,
+    .sidebar:not(.collapsed) ~ .page-main,
+    .sidebar.collapsed ~ .page-main {
+        width: auto;
+        max-width: none;
+        margin-left: calc(var(--pages-sidebar-mobile-closed) + 12px);
+        padding: 14px 12px 24px 0;
+    }
+
+    .sidebar,
+    .sidebar.collapsed {
+        width: var(--pages-sidebar-mobile-closed);
+        min-width: var(--pages-sidebar-mobile-closed);
+    }
+
+    .sidebar:not(.collapsed) {
+        width: var(--pages-sidebar-mobile-open);
+        min-width: var(--pages-sidebar-mobile-open);
+        box-shadow: 15px 0 40px rgba(0, 0, 0, 0.40);
+    }
+
+    .page-header {
+        width: 100%;
+        padding: 16px;
+        margin-bottom: 18px;
+        border-radius: 17px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .page-header h1 {
+        font-size: clamp(21px, 7vw, 28px);
+        line-height: 1.15;
+    }
+
+    .page-header p {
+        font-size: 12px;
+        line-height: 1.45;
+    }
+
+    .page-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .page-card {
+        width: 100%;
+        padding: 16px;
+        border-radius: 16px;
+    }
+
+    .metric-grid,
+    .form-grid,
+    .connection-guide {
+        grid-template-columns: 1fr !important;
+    }
+
+    .metric {
+        padding: 15px;
+    }
+
+    .data-row {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 7px;
+        padding: 13px 14px;
+    }
+
+    .button-row {
+        width: 100%;
+    }
+
+    .button-row button,
+    .primary-button,
+    .secondary-button,
+    .danger-button {
+        width: 100%;
+    }
+
+    .table-wrap {
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .data-table {
+        min-width: 600px;
+    }
+}
+
+/* Celular pequeno */
+@media (max-width: 420px) {
+    .page-main,
+    .sidebar:not(.collapsed) ~ .page-main,
+    .sidebar.collapsed ~ .page-main {
+        margin-left: calc(var(--pages-sidebar-mobile-closed) + 8px);
+        padding-right: 8px;
+        padding-bottom: 20px;
+    }
+
+    .page-header,
+    .page-card {
+        padding: 14px;
+    }
+
+    .data-table {
+        min-width: 560px;
+    }
+}
+
+/* ==========================================================
+   19. SIDEBAR RESPONSIVA — ABERTURA SEM EMPURRAR CONTEÚDO
+========================================================== */
+@media (max-width: 1200px) {
+    .sidebar:not(.collapsed) {
+        width: var(--pages-sidebar-open);
+        min-width: var(--pages-sidebar-open);
+        z-index: 1000;
+        box-shadow: 15px 0 45px rgba(0, 0, 0, 0.38);
+    }
+
+    .sidebar:not(.collapsed) .logo-name,
+    .sidebar:not(.collapsed) .sidebar-nav li span,
+    .sidebar:not(.collapsed) .sidebar-footer span {
+        width: auto;
+        max-width: 220px;
+        opacity: 1;
+        overflow: visible;
+        pointer-events: auto;
+    }
+
+    .sidebar:not(.collapsed) .sidebar-nav li a,
+    .sidebar:not(.collapsed) .sidebar-footer a {
+        justify-content: flex-start;
+        gap: 14px;
+    }
+}

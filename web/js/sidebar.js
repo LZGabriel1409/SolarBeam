@@ -12,10 +12,27 @@ document.addEventListener("DOMContentLoaded", () => {
         if (save) localStorage.setItem(KEY, String(collapsed));
     }
 
-    // Desktop: remember the user's choice.
-    // Mobile/tablet: also starts collapsed so the sun is always available.
+    // Em telas compactas a sidebar começa fechada para não ocupar
+    // espaço do conteúdo. O usuário pode abri-la pelo botão do sol.
+    // Em desktop, a preferência salva continua sendo respeitada.
     const saved = localStorage.getItem(KEY);
-    setCollapsed(saved === null ? false : saved === "true", false);
+    const compactScreen = window.innerWidth <= 1200;
+    const initialCollapsed = compactScreen
+        ? true
+        : (saved === null ? false : saved === "true");
+
+    setCollapsed(initialCollapsed, false);
+
+    // Se a janela mudar de desktop para tablet/celular, fecha a sidebar
+    // para preservar a largura útil da página.
+    let wasCompact = compactScreen;
+    window.addEventListener("resize", () => {
+        const nowCompact = window.innerWidth <= 1200;
+        if (nowCompact && !wasCompact) {
+            setCollapsed(true, false);
+        }
+        wasCompact = nowCompact;
+    });
 
     toggle.addEventListener("click", (event) => {
         event.preventDefault();
