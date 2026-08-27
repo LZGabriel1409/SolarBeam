@@ -1309,6 +1309,71 @@
     color: var(--red);
 }
 
+.dashboard-devices-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 10px;
+}
+
+.dashboard-device-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text);
+    text-decoration: none;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.dashboard-device-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+}
+
+.dashboard-device-icon {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    border-radius: 10px;
+    background: rgba(34, 197, 94, 0.14);
+    color: var(--green);
+}
+
+.dashboard-device-info {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    gap: 4px;
+}
+
+.dashboard-device-info strong,
+.dashboard-device-info small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dashboard-device-info strong {
+    font-size: 14px;
+}
+
+.dashboard-device-info small {
+    color: var(--text-secondary);
+    font-size: 11px;
+}
+
+.dashboard-device-item > i {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
 
 /* Zona de perigo */
 

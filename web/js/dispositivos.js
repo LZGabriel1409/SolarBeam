@@ -390,7 +390,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
             if (!porta.readable) {
-                await porta.open({ baudRate: 115200 });
+                await porta.open({ baudRate: 40 });
                 lerSerialContinuamente();
             }
             const confirmacao = aguardarConfirmacaoSerial();
@@ -456,12 +456,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // (1 caractere = 1 byte), não como Uint8Array.
         const dadosBstr = ui8ToBstr(dados);
 
-        // Baud rates tentadas em ordem. 460800 é mais rápida mas alguns
-        // adaptadores USB-serial (ex.: CP210x) e cabos ruins não sustentam
-        // essa taxa de forma estável e derrubam a conexão com "Timeout"
-        // logo no início da escrita. Se isso acontecer, cai para uma taxa
-        // mais lenta e tenta de novo automaticamente.
-        const BAUD_RATES = [460800, 115200];
+        const BAUD_RATES = [40];
 
         for (let tentativa = 0; tentativa < BAUD_RATES.length; tentativa++) {
             const baudrate = BAUD_RATES[tentativa];

@@ -39,7 +39,7 @@ async function obterStatus(req, res) {
     }
 
     const resultado = await db.execute({
-      sql: `SELECT umidade, nivel_agua, bateria, bomba, data_hora, versao_firmware
+      sql: `SELECT umidade, nivel_agua, bateria, bomba, temperatura, umidade_ar, data_hora, versao_firmware
             FROM leituras WHERE dispositivo_id = ?
             ORDER BY id DESC LIMIT 1`,
       args: [dispositivoId],
@@ -72,6 +72,8 @@ async function obterStatus(req, res) {
       bateriaPercentual,
       autonomiaEstimada: bateriaPercentual > 0 ? `${Math.max(1, Math.round(bateriaPercentual / 8))}h` : '--',
       bomba: Boolean(leitura.bomba),
+      temperatura: leitura.temperatura,
+      umidadeAr: leitura.umidade_ar,
       versaoFirmware: leitura.versao_firmware,
       online,
       wifi,

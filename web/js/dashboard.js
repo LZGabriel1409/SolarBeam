@@ -40,6 +40,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const semDispositivoPanel = document.getElementById("semDispositivoPanel");
     const dashboardContent = document.getElementById("dashboardContent");
+    const dashboardDevicesPanel = document.getElementById("dashboardDevicesPanel");
+    const dashboardDevicesList = document.getElementById("dashboardDevicesList");
     const dispositivoSelect = document.getElementById("dispositivoSelect");
 
     let dispositivoAtual = null; // { id, nome, codigo }
@@ -191,6 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             dispositivosCarregados = dispositivosConfigurados;
             mostrarConteudo();
+            renderizarDispositivos(dispositivosConfigurados);
             popularSeletorDispositivos(dispositivosConfigurados);
 
             // Tenta reaproveitar o dispositivo salvo anteriormente, se ainda existir
@@ -216,11 +219,33 @@ document.addEventListener("DOMContentLoaded", () => {
     function mostrarSemDispositivo() {
         if (semDispositivoPanel) semDispositivoPanel.hidden = false;
         if (dashboardContent) dashboardContent.hidden = true;
+        if (dashboardDevicesPanel) dashboardDevicesPanel.hidden = true;
     }
 
     function mostrarConteudo() {
         if (semDispositivoPanel) semDispositivoPanel.hidden = true;
         if (dashboardContent) dashboardContent.hidden = false;
+        if (dashboardDevicesPanel) dashboardDevicesPanel.hidden = false;
+    }
+
+    function renderizarDispositivos(dispositivos) {
+        if (!dashboardDevicesList) return;
+
+        dashboardDevicesList.innerHTML = dispositivos.map((dispositivo) => {
+            const status = dispositivo.online ? "Online" : "Offline";
+            const classeStatus = dispositivo.online ? "online" : "offline";
+            const url = `dispositivo-detalhe.html?id=${encodeURIComponent(dispositivo.id)}&codigo=${encodeURIComponent(dispositivo.codigo)}&nome=${encodeURIComponent(dispositivo.nome)}`;
+            return `
+                <a class="dashboard-device-item" href="${url}">
+                    <span class="dashboard-device-icon"><i class="fa-solid fa-microchip"></i></span>
+                    <span class="dashboard-device-info">
+                        <strong>${escaparHTML(dispositivo.nome)}</strong>
+                        <small>${escaparHTML(dispositivo.codigo)} · ${status}</small>
+                    </span>
+                    <span class="admin-status ${classeStatus}">${status}</span>
+                    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                </a>`;
+        }).join("");
     }
 
     function popularSeletorDispositivos(dispositivos) {

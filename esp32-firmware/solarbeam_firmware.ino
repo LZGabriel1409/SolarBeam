@@ -11,8 +11,8 @@ const char* VERSAO_FIRMWARE = "1.0.0";
 const int PINO_UMIDADE = 34;     // sensor de umidade do solo (entrada analogica)
 const int PINO_NIVEL_AGUA = 35;  // sensor de nivel de agua (entrada analogica)
 const int PINO_BATERIA = 33;     // leitura da tensao da bateria (entrada analogica)
-const int PINO_RELE_BOMBA = 26;  // rele que aciona a bomba (saida digital)
-const int PINO_DHT11 = 27;       // sensor de temperatura/umidade do ar (dados digitais)
+const int PINO_RELE_BOMBA = 27;  // rele que aciona a bomba (saida digital)
+const int PINO_DHT11 = 26;       // sensor de temperatura/umidade do ar (dados digitais)
 
 #define TIPO_DHT DHT11
 DHT dht(PINO_DHT11, TIPO_DHT);
@@ -39,7 +39,7 @@ unsigned long inicioTentativaWifi = 0;
 const unsigned long TEMPO_LIMITE_RECONEXAO_MS = 60000;
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(40);
   delay(500);
 
   pinMode(PINO_RELE_BOMBA, OUTPUT);
@@ -324,7 +324,7 @@ bool enviarLeitura() {
 
 void verificarComandoPendente() {
   HTTPClient http;
-  http.begin(String(API_URL) + "/api/comando?codigo=" + codigoDispositivo);
+  http.begin(String(API_URL) + "/api/comando?codigo=" + codigoDispositivo + "&tokenDispositivo=" + tokenDispositivo);
 
   int codigoResposta = http.GET();
   if (codigoResposta == 200) {
@@ -350,6 +350,10 @@ void confirmarComandoExecutado(int id) {
   HTTPClient http;
   http.begin(String(API_URL) + "/api/comando/" + String(id) + "/concluido");
   http.addHeader("Content-Type", "application/json");
-  http.POST("{}");
+  StaticJsonDocument<128> doc;
+  doc["tokenDispositivo"] = tokenDispositivo;
+  String corpo;
+  serializeJson(doc, corpo);
+  http.POST(corpo);
   http.end();
 }
