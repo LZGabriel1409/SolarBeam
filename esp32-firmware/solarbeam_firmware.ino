@@ -327,7 +327,9 @@ void atualizarConfiguracao() {
 
 void executarIrrigacaoAutomatica() {
   if (!configuracaoDisponivel || modoOperacao != "automatico") {
-    if (modoOperacao != "automatico" && bombaLigada()) definirBomba(false);
+    // Em modo manual ou sem configuracao, o comando manual do usuario deve
+    // prevalecer. Nao e seguro desligar a bomba aqui porque isso sobrescreve
+    // o comando enviado pela API e deixa o dispositivo inconsistente.
     inicioIrrigacaoAutomatica = 0;
     return;
   }
