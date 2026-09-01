@@ -1,9 +1,25 @@
+const fs = require('fs');
+const path = require('path');
 const { createClient } = require('@libsql/client');
 
-const db = createClient({
-  url: process.env.TURSO_DATABASE_URL,
-  authToken: process.env.TURSO_AUTH_TOKEN,
-});
+function resolveDatabaseConfig(env = process.env) {
+  if (env.TURSO_DATABASE_URL) {
+    return { url: env.TURSO_DATABASE_URL, authToken: env.TURSO_AUTH_TOKEN || '' };
+  }
+
+  const dbDir = path.resolve(process.cwd(), 'data');
+  fs.mkdirSync(dbDir, { recursive: true });
+
+  return {
+    url: 'file:./data/solarbeam.db',
+    authToken: '',
+  };
+}
+
+const { url, authToken } = resolveDatabaseConfig();
+const db = createClient({ url, authToken });
+
+module.exports = { db, initDatabase, resolveDatabaseConfig };
 
 // Confere se uma coluna ja existe antes de tentar adicionar (mais confiavel
 // que tentar capturar o texto do erro, que pode variar entre engines/versoes).
@@ -85,5 +101,3 @@ async function initDatabase() {
 
   console.log('Banco de dados inicializado (Turso).');
 }
-
-module.exports = { db, initDatabase };

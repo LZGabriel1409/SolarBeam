@@ -1,11 +1,7 @@
 require('dotenv').config();
 
-const obrigatorias = ['JWT_SECRET', 'TURSO_DATABASE_URL', 'TURSO_AUTH_TOKEN'];
-const faltando = obrigatorias.filter((variavel) => !process.env[variavel]);
-
-if (faltando.length > 0) {
-  console.error(`Variaveis de ambiente faltando: ${faltando.join(', ')}`);
-  process.exit(1);
+if (!process.env.JWT_SECRET) {
+  process.env.JWT_SECRET = 'solarbeam-dev-secret-change-me';
 }
 
 const app = require('./app');
