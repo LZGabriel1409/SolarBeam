@@ -41,6 +41,8 @@ const unsigned long INTERVALO_VERIFICACAO_COMANDO_MS = 5000;
 unsigned long ultimaAtualizacaoConfig = 0;
 const unsigned long INTERVALO_CONFIG_MS = 60000;
 unsigned long inicioIrrigacaoAutomatica = 0;
+unsigned long bloqueioAutomaticoAte = 0;
+const unsigned long BLOQUEIO_APOS_COMANDO_MANUAL_MS = 60000;
 bool configuracaoDisponivel = false;
 float umidadeMinima = 30.0;
 unsigned long tempoBombaMs = 10000;
@@ -387,6 +389,12 @@ void executarIrrigacaoAutomatica() {
     return;
   }
 
+  if (millis() < bloqueioAutomaticoAte) {
+    // Ainda dentro da janela de respeito ao ultimo comando manual: nao
+    // reavalia religar/desligar automaticamente.
+    return;
+  }
+
   float umidade = lerUmidade();
   float nivelAgua = lerNivelAgua();
 
@@ -409,21 +417,23 @@ void executarIrrigacaoAutomatica() {
 }
 
 float lerTemperatura() {
-  float temperatura = dht.readTemperature();
-  if (isnan(temperatura)) {
-    Serial.println("Falha ao ler temperatura do DHT11.");
-    return NAN;
+  for (int tentativa = 1; tentativa <= 3; tentativa++) {
+    float temperatura = dht.readTemperature();
+    if (!isnan(temperatura)) return temperatura;
+    Serial.println("Falha ao ler temperatura do DHT11 (tentativa " + String(tentativa) + "/3).");
+    delay(300);
   }
-  return temperatura;
+  return NAN;
 }
 
 float lerUmidadeAr() {
-  float umidadeAr = dht.readHumidity();
-  if (isnan(umidadeAr)) {
-    Serial.println("Falha ao ler umidade do ar do DHT11.");
-    return NAN;
+  for (int tentativa = 1; tentativa <= 3; tentativa++) {
+    float umidadeAr = dht.readHumidity();
+    if (!isnan(umidadeAr)) return umidadeAr;
+    Serial.println("Falha ao ler umidade do ar do DHT11 (tentativa " + String(tentativa) + "/3).");
+    delay(300);
   }
-  return umidadeAr;
+  return NAN;
 }
 
 bool enviarLeitura() {
@@ -490,6 +500,13 @@ void verificarComandoPendente() {
       bool ligar = doc["bomba"];
       definirBomba(ligar);
       Serial.println("Comando aplicado: bomba " + String(ligar ? "LIGADA" : "DESLIGADA"));
+
+      // Um comando manual (principalmente "desligar") precisa ser respeitado
+      // por um tempo, mesmo em modo automatico. Sem isso, executarIrrigacaoAutomatica()
+      // pode ligar a bomba de novo poucos milissegundos depois, na mesma volta do loop,
+      // dando a impressao de que o botao "Desligar" nao funciona.
+      inicioIrrigacaoAutomatica = 0;
+      bloqueioAutomaticoAte = millis() + BLOQUEIO_APOS_COMANDO_MANUAL_MS;
 
       int idComando = doc["id"];
       confirmarComandoExecutado(idComando);
