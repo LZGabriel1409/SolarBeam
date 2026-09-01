@@ -19,6 +19,9 @@ const bool RELE_ATIVO_EM_LOW = true;
 #define TIPO_DHT DHT11
 DHT dht(PINO_DHT11, TIPO_DHT);
 
+const bool RELE_BOMBA_LIGADO = RELE_ATIVO_EM_LOW ? LOW : HIGH;
+const bool RELE_BOMBA_DESLIGADO = RELE_ATIVO_EM_LOW ? HIGH : LOW;
+
 const char* AP_NOME = "SolarBeam";
 const IPAddress AP_IP(192, 168, 4, 1);
 DNSServer dnsServer;
@@ -151,30 +154,81 @@ void iniciarPortalConfig() {
   Serial.println("O portal sera aberto automaticamente; se necessario acesse http://192.168.4.1");
 }
 
+String gerarListaWiFiHtml() {
+  String opcoes = "<option value=''>Selecione a rede...</option>";
+  int numeroRedes = WiFi.scanNetworks(false, true);
+
+  if (numeroRedes == 0) {
+    return opcoes;
+  }
+
+  for (int i = 0; i < numeroRedes; i++) {
+    String ssid = WiFi.SSID(i);
+    ssid.replace("&", "&amp;");
+    ssid.replace("\"", "&quot;");
+    ssid.replace("<", "&lt;");
+    ssid.replace(">", "&gt;");
+    opcoes += "<option value='" + ssid + "'>" + ssid + "</option>";
+  }
+
+  return opcoes;
+}
+
 void paginaConfigWifi() {
+  String redesDisponiveis = gerarListaWiFiHtml();
+
   String html =
     "<!DOCTYPE html><html lang='pt-BR'><head><meta charset='UTF-8'>"
     "<meta name='viewport' content='width=device-width, initial-scale=1.0'>"
     "<title>Solar Beam - Configurar WiFi</title>"
     "<style>"
-    "body{font-family:Arial,sans-serif;background:#0B1220;color:#E5E7EB;padding:24px;}"
-    ".card{max-width:360px;margin:0 auto;background:#111827;border-radius:12px;padding:24px;}"
-    "h1{font-size:20px;margin-bottom:4px;color:#22C55E;}"
-    "p{font-size:13px;color:#94A3B8;margin-bottom:18px;}"
-    "label{font-size:13px;display:block;margin-bottom:6px;}"
-    "input,select{width:100%;padding:10px;margin-bottom:14px;border-radius:8px;border:1px solid #374151;background:#1F2937;color:#E5E7EB;box-sizing:border-box;}"
-    "button{width:100%;padding:12px;border:none;border-radius:8px;background:#22C55E;color:#0B1220;font-weight:bold;font-size:14px;}"
+    "*{box-sizing:border-box;}"
+    "body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(180deg,#0B1220,#111827);color:#E5E7EB;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:18px;}"
+    ".card{width:min(100%, 380px);background:rgba(17,24,39,.95);border:1px solid rgba(148,163,184,.25);border-radius:18px;padding:22px 18px 18px;box-shadow:0 16px 40px rgba(0,0,0,.35);}"
+    "h1{margin:0 0 8px;font-size:28px;color:#22C55E;text-align:center;}"
+    "p{margin:0 0 18px;font-size:14px;color:#94A3B8;text-align:center;line-height:1.4;}"
+    "label{display:block;font-size:13px;margin-bottom:7px;color:#E2E8F0;}"
+    "input,select{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #374151;background:#0F172A;color:#E5E7EB;font-size:15px;outline:none;}"
+    "input:focus,select:focus{border-color:#22C55E;box-shadow:0 0 0 2px rgba(34,197,94,0.18);}"
+    ".field{position:relative;margin-bottom:14px;}"
+    ".field button{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#94A3B8;font-size:12px;font-weight:bold;padding:6px 8px;border-radius:8px;cursor:pointer;}"
+    ".field button:active{background:rgba(148,163,184,.08);}"
+    "button[type='submit']{width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(180deg,#22C55E,#16A34A);color:#0B1220;font-weight:bold;font-size:15px;cursor:pointer;margin-top:8px;}"
+    ".helper{font-size:11px;color:#9CA3AF;margin:-6px 0 14px;line-height:1.4;}"
+    "@media (max-width: 420px){body{padding:12px;} .card{padding:18px 14px 14px;}}"
     "</style></head><body>"
     "<div class='card'>"
     "<h1>Solar Beam</h1>"
-    "<p>Escolha o WiFi que o dispositivo deve usar</p>"
+    "<p>Selecione a rede Wi‑Fi da sua casa ou do seu celular</p>"
     "<form action='/salvar' method='POST'>"
-    "<label for='ssid'>Nome da rede (SSID)</label>"
-    "<input type='text' id='ssid' name='ssid' required>"
+    "<label for='ssid'>Rede Wi‑Fi</label>"
+    "<div class='field'>"
+    "<input type='text' id='ssid' name='ssid' list='redes-wifi' placeholder='Digite ou escolha a rede' required>"
+    "</div>"
+    "<datalist id='redes-wifi'>" + redesDisponiveis + "</datalist>"
+    "<div class='helper'>Se a rede não aparecer, digite o nome manualmente.</div>"
     "<label for='senha'>Senha</label>"
-    "<input type='password' id='senha' name='senha'>"
+    "<div class='field'>"
+    "<input type='password' id='senha' name='senha' placeholder='Digite a senha da rede'>"
+    "<button type='button' id='toggleSenha'>MOSTRAR</button>"
+    "</div>"
     "<button type='submit'>Salvar e conectar</button>"
-    "</form></div></body></html>";
+    "</form></div>"
+    "<script>"
+    "const senhaInput = document.getElementById('senha');"
+    "const toggleSenha = document.getElementById('toggleSenha');"
+    "const ssidInput = document.getElementById('ssid');"
+    "toggleSenha.addEventListener('click', function(){"
+    "  const isPassword = senhaInput.type === 'password';"
+    "  senhaInput.type = isPassword ? 'text' : 'password';"
+    "  toggleSenha.textContent = isPassword ? 'OCULTAR' : 'MOSTRAR';"
+    "});"
+    "if (ssidInput && ssidInput.list && ssidInput.list.options.length > 1) {"
+    "  ssidInput.addEventListener('focus', function(){"
+    "    if (!ssidInput.value) ssidInput.click();"
+    "  });"
+    "}"
+    "</script></body></html>";
 
   servidorConfig.send(200, "text/html", html);
 }
@@ -203,6 +257,8 @@ void salvarConfigWifi() {
 
 bool conectarWiFi() {
   Serial.println("Conectando ao WiFi '" + wifiSSIDSalvo + "'...");
+  WiFi.setSleep(false);
+  WiFi.setAutoReconnect(true);
   WiFi.mode(WIFI_STA);
   WiFi.begin(wifiSSIDSalvo.c_str(), wifiSenhaSalva.c_str());
 
@@ -327,9 +383,6 @@ void atualizarConfiguracao() {
 
 void executarIrrigacaoAutomatica() {
   if (!configuracaoDisponivel || modoOperacao != "automatico") {
-    // Em modo manual ou sem configuracao, o comando manual do usuario deve
-    // prevalecer. Nao e seguro desligar a bomba aqui porque isso sobrescreve
-    // o comando enviado pela API e deixa o dispositivo inconsistente.
     inicioIrrigacaoAutomatica = 0;
     return;
   }
@@ -457,14 +510,17 @@ void confirmarComandoExecutado(int id) {
   http.setTimeout(15000);
   http.begin(cliente, String(API_URL) + "/api/comando/" + String(id) + "/concluido");
   http.addHeader("Content-Type", "application/json");
+
   StaticJsonDocument<128> doc;
   doc["tokenDispositivo"] = tokenDispositivo;
   String corpo;
   serializeJson(doc, corpo);
+
   int codigoResposta = http.POST(corpo);
   Serial.println("Confirmacao do comando " + String(id) + " -> HTTP " + String(codigoResposta));
   if (codigoResposta <= 0) {
     Serial.println("Erro HTTPS ao confirmar comando: " + http.errorToString(codigoResposta));
   }
+
   http.end();
 }
