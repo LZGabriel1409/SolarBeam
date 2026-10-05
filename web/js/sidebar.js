@@ -50,10 +50,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Mark current page.
     const current = (location.pathname.split("/").pop() || "dashboard.html").toLowerCase();
+    const currentSection = current === "dispositivo-detalhe.html" ? "dispositivos.html" : current;
     sidebar.querySelectorAll(".sidebar-nav a").forEach(link => {
         const href = (link.getAttribute("href") || "").split("/").pop().toLowerCase();
         const item = link.closest("li");
-        if (item) item.classList.toggle("active", href === current);
+        if (item) item.classList.toggle("active", href === currentSection);
     });
 
     // Admin visibility is based on the role saved by the login flow.

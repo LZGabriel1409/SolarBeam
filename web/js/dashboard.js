@@ -456,10 +456,10 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             adicionarAlerta(
-                ligar ? "Bomba ligada" : "Bomba desligada",
+                ligar ? "Comando de ligar enviado" : "Comando de desligar enviado",
                 ligar
-                    ? "O comando para ligar a bomba foi enviado."
-                    : "O comando para desligar a bomba foi enviado.",
+                    ? "O comando foi colocado na fila e o ESP32 vai aplicá-lo na próxima consulta."
+                    : "O comando foi colocado na fila e o ESP32 vai aplicá-lo na próxima consulta.",
                 ligar ? "success" : "warning"
             );
 
@@ -468,7 +468,11 @@ document.addEventListener("DOMContentLoaded", () => {
             // status continua mostrando o valor antigo por um tempo.
             if (pumpStatus) pumpStatus.textContent = ligar ? "Ligada" : "Desligada";
 
+            // O backend apenas enfileira o comando. O ESP32 consulta a fila
+            // periodicamente, então uma leitura imediata ainda pode mostrar
+            // o estado anterior. Atualizamos novamente após alguns segundos.
             await carregarStatus();
+            window.setTimeout(() => carregarStatus(), 6500);
 
         } catch (err) {
             console.error("Erro ao enviar comando:", err);
