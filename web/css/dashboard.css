@@ -2748,3 +2748,59 @@ body {
         gap: 14px;
     }
 }
+
+
+/* ==========================================================
+   PÁGINA DE DETALHE DO DISPOSITIVO
+   Mantém o layout das outras páginas intacto.
+========================================================== */
+.device-detail-page .main-content {
+    padding-bottom: 56px;
+}
+
+.device-detail-page .device-detail-cards {
+    margin-bottom: 28px;
+    gap: 20px;
+}
+
+.device-detail-page .device-detail-panels {
+    gap: 24px;
+    align-items: start;
+}
+
+.device-detail-page .device-detail-panels > .panel {
+    height: 100%;
+}
+
+.device-detail-page .status-list {
+    gap: 12px;
+}
+
+.device-detail-page .status-item {
+    min-height: 52px;
+}
+
+.device-detail-page .device-simulator-form {
+    gap: 14px;
+}
+
+.device-detail-page .device-simulator-button {
+    margin-top: 4px;
+}
+
+@media (max-width: 900px) {
+    .device-detail-page .device-detail-cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .device-detail-page .device-detail-panels {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 560px) {
+    .device-detail-page .device-detail-cards {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+}
