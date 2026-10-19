@@ -39,12 +39,26 @@ jobs:
         run: |
           arduino-cli config init --overwrite
           arduino-cli config set board_manager.additional_urls "$ESP32_INDEX_URL"
+          ok=0
           for i in 1 2 3; do
-            arduino-cli core update-index && break
+            arduino-cli core update-index && ok=1 && break
             echo "update-index falhou (tentativa $i), repetindo..."
-            if [ "$i" -eq 3 ]; then exit 1; fi
             sleep 10
           done
+          if [ "$ok" -ne 1 ]; then
+            echo "::group::DIAGNOSTICO arduino-cli"
+            arduino-cli version
+            arduino-cli core update-index --log --log-level debug 2>&1 | tail -n 80 || true
+            echo "--- arquivos em ~/.arduino15 ---"
+            ls -la "$HOME/.arduino15" || true
+            echo "--- teste manual do indice oficial ---"
+            curl -fsSIL https://downloads.arduino.cc/packages/package_index.tar.bz2 | head -n 15 || true
+            curl -fsSL https://downloads.arduino.cc/packages/package_index.tar.bz2 -o /tmp/pi.tar.bz2 || true
+            ls -la /tmp/pi.tar.bz2 || true
+            tar -tjf /tmp/pi.tar.bz2 || true
+            echo "::endgroup::"
+            exit 1
+          fi
           arduino-cli core install "esp32:esp32@${ESP32_CORE_VERSION}"
 
       - name: Install libraries
