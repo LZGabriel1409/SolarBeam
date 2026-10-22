@@ -307,10 +307,9 @@ void executarIrrigacaoAutomatica() {
   float nivelAgua = lerNivelAgua();
 
   if (bombaLigada()) {
-    if (nivelAgua <= NIVEL_AGUA_MINIMO || agora - inicioBombaMs >= tempoBombaMs) {
+    if (agora - inicioBombaMs >= tempoBombaMs) {
       definirBomba(false);
-      Serial.println(nivelAgua <= NIVEL_AGUA_MINIMO ? "Bomba desligada: nivel de agua baixo." :
-        "Bomba desligada: tempo automatico concluido.");
+      Serial.println("Bomba desligada: tempo automatico concluido.");
     }
     return;
   }
