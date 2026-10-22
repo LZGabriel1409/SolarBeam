@@ -1,8 +1,17 @@
 /*
-  SolarBeam - Firmware v1.2.0 (reconstruido)
+  SolarBeam - Firmware v1.2.1
 
-  O QUE MUDOU EM RELACAO A v1.1.1
+  O QUE MUDOU EM RELACAO A v1.2.0
   -------------------------------
+   - Rele agora comandado por transistor TIP122 (GPIO27 -> 1k -> Base; Coletor -> IN do modulo;
+     Emissor -> GND). A logica ficou "HIGH = rele armado": RELE_ATIVO_EM_LOW = false e
+     RELE_MODO_DRENO_ABERTO = false.
+   - escreverRele(): pinMode(OUTPUT) agora vem ANTES do digitalWrite.
+   - tratarPortal(): WiFi.disconnect() antes de WiFi.begin(), corrige o erro
+     "wifi:sta is connecting, cannot set config".
+
+  O QUE MUDOU EM RELACAO A v1.1.1 (v1.2.0)
+  ----------------------------------------
   RELE
    - Rele agora nasce DESLIGADO (primeira instrucao do setup) e ha modo "dreno aberto"
      (RELE_MODO_DRENO_ABERTO) para modulos de rele 5V comandados por 3.3V do ESP32:
@@ -38,7 +47,7 @@
 // CONFIGURACAO
 // ============================================================
 const char* API_URL = "https://api-solarbeam.onrender.com";
-const char* VERSAO_FIRMWARE = "1.2.0";
+const char* VERSAO_FIRMWARE = "1.2.1";
 
 const int PINO_UMIDADE = 34;     // sensor de umidade do solo (entrada analogica)
 const int PINO_NIVEL_AGUA = 35;  // sensor de nivel de agua (entrada analogica)
@@ -49,14 +58,16 @@ const int PINO_DHT11 = 26;       // sensor de temperatura/umidade do ar (dados d
 // --- Rele ---------------------------------------------------
 // true  = modulo liga com o pino em LOW (a maioria dos modulos com optoacoplador)
 // false = modulo liga com o pino em HIGH
+// COM O TRANSISTOR TIP122 (GPIO -> 1k -> Base; Coletor -> IN do modulo; Emissor -> GND)
+// A LOGICA INVERTE: HIGH ARMA O RELE. POR ISSO AQUI FICA false.
 // SE "LIGAR" E "DESLIGAR" ESTIVEREM INVERTIDOS, TROQUE ESTE VALOR.
-const bool RELE_ATIVO_EM_LOW = true;
+const bool RELE_ATIVO_EM_LOW = false;
 
-// Modulo alimentado em 5V + sinal de 3.3V do ESP32: o HIGH de 3.3V pode nao desligar o rele.
-// Neste modo, para DESLIGAR o pino vira entrada (alta impedancia) e o proprio modulo
-// puxa a entrada para cima. So vale quando RELE_ATIVO_EM_LOW = true.
-// Se o rele ficar sempre ligado com isso, coloque false.
-const bool RELE_MODO_DRENO_ABERTO = true;
+// Modo para modulo ligado DIRETO no GPIO (sem transistor), alimentado em 5V com sinal de 3.3V:
+// o HIGH de 3.3V pode nao desligar o rele. Neste modo, para DESLIGAR o pino vira entrada
+// (alta impedancia) e o proprio modulo puxa a entrada para cima. So vale quando
+// RELE_ATIVO_EM_LOW = true. Com o TIP122 deixe false.
+const bool RELE_MODO_DRENO_ABERTO = false;
 
 // --- Calibracao dos sensores --------------------------------
 const int UMIDADE_ADC_SECO = 4095;     // leitura bruta com o sensor no ar/solo seco
@@ -246,16 +257,16 @@ void loop() {
 void escreverRele(bool ligado) {
   if (RELE_ATIVO_EM_LOW && RELE_MODO_DRENO_ABERTO) {
     if (ligado) {
-      digitalWrite(PINO_RELE_BOMBA, LOW);   // define o nivel antes de virar saida (sem pulso)
       pinMode(PINO_RELE_BOMBA, OUTPUT);
+      digitalWrite(PINO_RELE_BOMBA, LOW);
     } else {
       pinMode(PINO_RELE_BOMBA, INPUT);      // solto: o modulo puxa para cima => desligado
     }
   } else {
     bool nivelAtivo = RELE_ATIVO_EM_LOW ? LOW : HIGH;
     bool nivelInativo = RELE_ATIVO_EM_LOW ? HIGH : LOW;
-    digitalWrite(PINO_RELE_BOMBA, ligado ? nivelAtivo : nivelInativo);
     pinMode(PINO_RELE_BOMBA, OUTPUT);
+    digitalWrite(PINO_RELE_BOMBA, ligado ? nivelAtivo : nivelInativo);
   }
 }
 
@@ -853,6 +864,7 @@ void tratarPortal() {
   unsigned long agora = millis();
   if (agora - ultimaTentativaWifi >= 20000 && WiFi.softAPgetStationNum() == 0) {
     ultimaTentativaWifi = agora;
+    WiFi.disconnect();   // evita "wifi:sta is connecting, cannot set config"
     WiFi.begin(wifiSSIDSalvo.c_str(), wifiSenhaSalva.c_str());
   }
 }
