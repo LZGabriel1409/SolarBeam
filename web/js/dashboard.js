@@ -370,8 +370,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (batteryAutonomy) batteryAutonomy.textContent = dados.autonomiaEstimada || "--";
 
         if (pumpStatus) {
-            pumpStatus.textContent =
-                dados.bomba ? "Ligada" : "Desligada";
+            const ligada = dados.bomba === true || dados.bomba === 1 || dados.bomba === "true" || dados.bomba === "1";
+            pumpStatus.textContent = ligada ? "Ligada" : "Desligada";
+            const pumpCard = pumpStatus.closest(".card");
+            if (pumpCard) pumpCard.classList.toggle("pump-on", ligada);
+            pumpStatus.classList.toggle("status-on", ligada);
+            pumpStatus.classList.toggle("status-off", !ligada);
         }
 
         if (lastUpdate) {
@@ -466,7 +470,13 @@ document.addEventListener("DOMContentLoaded", () => {
             // Reflete o novo estado na hora: a leitura real do ESP32 só chega
             // no próximo envio (até 60s depois), então sem isso o card de
             // status continua mostrando o valor antigo por um tempo.
-            if (pumpStatus) pumpStatus.textContent = ligar ? "Ligada" : "Desligada";
+            if (pumpStatus) {
+                pumpStatus.textContent = ligar ? "Ligada" : "Desligada";
+                const pumpCard = pumpStatus.closest(".card");
+                if (pumpCard) pumpCard.classList.toggle("pump-on", ligar);
+                pumpStatus.classList.toggle("status-on", ligar);
+                pumpStatus.classList.toggle("status-off", !ligar);
+            }
 
             // O backend apenas enfileira o comando. O ESP32 consulta a fila
             // periodicamente, então uma leitura imediata ainda pode mostrar
